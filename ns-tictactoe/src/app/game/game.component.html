@@ -1,0 +1,149 @@
+<Page class="page">
+    <ActionBar title="Tic Tac Toe" class="action-bar">
+        <ActionItem (tap)="toggleSettings()" ios.position="right" android.position="actionBar">
+            <Label text="⚙️" class="action-icon" accessibilityLabel="Game settings" ></Label>
+        </ActionItem>
+    </ActionBar>
+    
+    <ScrollView>
+        <StackLayout class="game-container">
+            <!-- Header -->
+            <StackLayout class="header">
+                <Label text="TIC TAC TOE" class="game-title"></Label>
+                <Label [text]="getStatusMessage()" class="status-message" 
+                       [class]="gameService.gameState.toLowerCase()"></Label>
+                <Label [text]="getStatusSubtitle()" class="status-subtitle"></Label>
+            </StackLayout>
+
+            <!-- Score Board -->
+            <GridLayout columns="*, *, *" class="score-board">
+                <StackLayout col="0" class="score-item">
+                    <Label text="Player X" class="score-label player-x"></Label>
+                    <Label [text]="gameService.scores.X" class="score-value"></Label>
+                </StackLayout>
+                <StackLayout col="1" class="score-item">
+                    <Label text="Draws" class="score-label draw"></Label>
+                    <Label [text]="gameService.scores.draws" class="score-value"></Label>
+                </StackLayout>
+                <StackLayout col="2" class="score-item">
+                    <Label text="Player O" class="score-label player-o"></Label>
+                    <Label [text]="gameService.scores.O" class="score-value"></Label>
+                </StackLayout>
+            </GridLayout>
+
+            <!-- Game Board -->
+            <GridLayout rows="*, *, *" columns="*, *, *" class="game-board" 
+                       [ariaLabel]="getBoardAriaLabel()" role="grid">
+                
+                <!-- Row 0 -->
+                <StackLayout *ngFor="let col of [0,1,2]; let colIndex = index" 
+                           row="0" [col]="colIndex"
+                           (tap)="makeMove(getCellIndex(0, colIndex))"
+                           class="cell-container"
+                           [ariaLabel]="getCellAriaLabel(getCellIndex(0, colIndex))"
+                           role="gridcell"
+                           accessibilityRole="button">
+                           
+                    <Label [text]="gameService.cells[getCellIndex(0, colIndex)]" 
+                           class="cell"
+                           [ngClass]="getCellClass(gameService.cells[getCellIndex(0, colIndex)], getCellIndex(0, colIndex))"
+                           [ariaHidden]="true"></Label>
+                           
+                    <GridLayout *ngIf="!gameService.cells[getCellIndex(0, colIndex)] && gameService.gameState === 'playing'" 
+                               class="cell-hover-effect">
+                        <Label [text]="gameService.currentPlayer" class="cell-ghost"></Label>
+                    </GridLayout>
+                </StackLayout>
+
+                <!-- Row 1 -->
+                <StackLayout *ngFor="let col of [0,1,2]; let colIndex = index" 
+                           row="1" [col]="colIndex"
+                           (tap)="makeMove(getCellIndex(1, colIndex))"
+                           class="cell-container"
+                           [ariaLabel]="getCellAriaLabel(getCellIndex(1, colIndex))"
+                           role="gridcell"
+                           accessibilityRole="button">
+                           
+                    <Label [text]="gameService.cells[getCellIndex(1, colIndex)]" 
+                           class="cell"
+                           [ngClass]="getCellClass(gameService.cells[getCellIndex(1, colIndex)], getCellIndex(1, colIndex))"
+                           [ariaHidden]="true"></Label>
+                           
+                    <GridLayout *ngIf="!gameService.cells[getCellIndex(1, colIndex)] && gameService.gameState === 'playing'" 
+                               class="cell-hover-effect">
+                        <Label [text]="gameService.currentPlayer" class="cell-ghost"></Label>
+                    </GridLayout>
+                </StackLayout>
+
+                <!-- Row 2 -->
+                <StackLayout *ngFor="let col of [0,1,2]; let colIndex = index" 
+                           row="2" [col]="colIndex"
+                           (tap)="makeMove(getCellIndex(2, colIndex))"
+                           class="cell-container"
+                           [ariaLabel]="getCellAriaLabel(getCellIndex(2, colIndex))"
+                           role="gridcell"
+                           accessibilityRole="button">
+                           
+                    <Label [text]="gameService.cells[getCellIndex(2, colIndex)]" 
+                           class="cell"
+                           [ngClass]="getCellClass(gameService.cells[getCellIndex(2, colIndex)], getCellIndex(2, colIndex))"
+                           [ariaHidden]="true"></Label>
+                           
+                    <GridLayout *ngIf="!gameService.cells[getCellIndex(2, colIndex)] && gameService.gameState === 'playing'" 
+                               class="cell-hover-effect">
+                        <Label [text]="gameService.currentPlayer" class="cell-ghost"></Label>
+                    </GridLayout>
+                </StackLayout>
+                
+            </GridLayout>
+
+            <!-- Action Buttons -->
+            <FlexboxLayout class="action-buttons">
+                <Button text="🔄 New Game" 
+                        (tap)="resetGame()" 
+                        class="btn btn-primary"
+                        [isEnabled]="!isAnimating"
+                        accessibilityRole="button"
+                        accessibilityLabel="Start a new game"></Button>
+                
+                <Button text="📊 Reset Scores" 
+                        (tap)="resetScores()" 
+                        class="btn btn-secondary"
+                        accessibilityRole="button"
+                        accessibilityLabel="Reset all scores to zero"></Button>
+            </FlexboxLayout>
+
+            <!-- Settings Panel -->
+            <StackLayout *ngIf="showSettings" class="settings-panel">
+                <Label text="Game Settings" class="settings-title"></Label>
+                
+                <StackLayout class="setting-item">
+                    <Label text="Animation Speed" class="setting-label"></Label>
+                    <SegmentedBar selectedIndex="1" class="setting-control">
+                        <SegmentedBarItem title="Fast"></SegmentedBarItem>
+                        <SegmentedBarItem title="Normal"></SegmentedBarItem>
+                        <SegmentedBarItem title="Slow"></SegmentedBarItem>
+                    </SegmentedBar>
+                </StackLayout>
+
+                <StackLayout class="setting-item">
+                    <Label text="Sound Effects" class="setting-label"></Label>
+                    <Switch checked="true" class="setting-control"></Switch>
+                </StackLayout>
+
+                <StackLayout class="setting-item">
+                    <Label text="Haptic Feedback" class="setting-label"></Label>
+                    <Switch checked="true" class="setting-control"></Switch>
+                </StackLayout>
+            </StackLayout>
+
+            <!-- Game Instructions -->
+            <StackLayout class="instructions" *ngIf="gameService.gameState === 'playing'">
+                <Label text="How to Play" class="instructions-title"></Label>
+                <Label text="• Tap any empty cell to place your mark" class="instruction"></Label>
+                <Label text="• Get three in a row to win" class="instruction"></Label>
+                <Label text="• Player X always starts first" class="instruction"></Label>
+            </StackLayout>
+        </StackLayout>
+    </ScrollView>
+</Page>
