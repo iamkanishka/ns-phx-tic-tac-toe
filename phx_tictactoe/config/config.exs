@@ -7,20 +7,20 @@
 # General application configuration
 import Config
 
-config :phx_tictactoe,
-  ecto_repos: [PhxTictactoe.Repo],
+config :tic_tac_toe,
+  ecto_repos: [TicTacToe.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
 # Configures the endpoint
-config :phx_tictactoe, PhxTictactoeWeb.Endpoint,
+config :tic_tac_toe, TicTacToeWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [json: PhxTictactoeWeb.ErrorJSON],
+    formats: [json: TicTacToeWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: PhxTictactoe.PubSub,
-  live_view: [signing_salt: "BwcV6dtU"]
+  pubsub_server: TicTacToe.PubSub,
+  live_view: [signing_salt: "vpQoqwe8"]
 
 # Configures the mailer
 #
@@ -29,12 +29,12 @@ config :phx_tictactoe, PhxTictactoeWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :phx_tictactoe, PhxTictactoe.Mailer, adapter: Swoosh.Adapters.Local
+config :tic_tac_toe, TicTacToe.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.17.11",
-  phx_tictactoe: [
+  tic_tac_toe: [
     args:
       ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
@@ -44,7 +44,7 @@ config :esbuild,
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "3.4.3",
-  phx_tictactoe: [
+  tic_tac_toe: [
     args: ~w(
       --config=tailwind.config.js
       --input=css/app.css

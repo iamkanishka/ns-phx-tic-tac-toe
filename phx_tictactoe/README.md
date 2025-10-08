@@ -1,4 +1,4 @@
-# PhxTictactoe
+# TicTacToe
 
 To start your Phoenix server:
 

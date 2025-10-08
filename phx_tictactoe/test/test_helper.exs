@@ -1,2 +1,2 @@
 ExUnit.start()
-Ecto.Adapters.SQL.Sandbox.mode(PhxTictactoe.Repo, :manual)
+Ecto.Adapters.SQL.Sandbox.mode(TicTacToe.Repo, :manual)

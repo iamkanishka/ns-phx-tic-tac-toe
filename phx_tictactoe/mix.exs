@@ -1,9 +1,9 @@
-defmodule PhxTictactoe.MixProject do
+defmodule TicTacToe.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :phx_tictactoe,
+      app: :tic_tac_toe,
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -18,7 +18,7 @@ defmodule PhxTictactoe.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {PhxTictactoe.Application, []},
+      mod: {TicTacToe.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -70,10 +70,10 @@ defmodule PhxTictactoe.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["tailwind phx_tictactoe", "esbuild phx_tictactoe"],
+      "assets.build": ["tailwind tic_tac_toe", "esbuild tic_tac_toe"],
       "assets.deploy": [
-        "tailwind phx_tictactoe --minify",
-        "esbuild phx_tictactoe --minify",
+        "tailwind tic_tac_toe --minify",
+        "esbuild tic_tac_toe --minify",
         "phx.digest"
       ]
     ]

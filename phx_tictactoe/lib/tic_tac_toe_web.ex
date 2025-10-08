@@ -1,12 +1,12 @@
-defmodule PhxTictactoeWeb do
+defmodule TicTacToeWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
   This can be used in your application as:
 
-      use PhxTictactoeWeb, :controller
-      use PhxTictactoeWeb, :html
+      use TicTacToeWeb, :controller
+      use TicTacToeWeb, :html
 
   The definitions below will be executed for every controller,
   component, etc, so keep them short and clean, focused
@@ -39,9 +39,9 @@ defmodule PhxTictactoeWeb do
     quote do
       use Phoenix.Controller,
         formats: [:html, :json],
-        layouts: [html: PhxTictactoeWeb.Layouts]
+        layouts: [html: TicTacToeWeb.Layouts]
 
-      use Gettext, backend: PhxTictactoeWeb.Gettext
+      use Gettext, backend: TicTacToeWeb.Gettext
 
       import Plug.Conn
 
@@ -52,9 +52,9 @@ defmodule PhxTictactoeWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: PhxTictactoeWeb.Endpoint,
-        router: PhxTictactoeWeb.Router,
-        statics: PhxTictactoeWeb.static_paths()
+        endpoint: TicTacToeWeb.Endpoint,
+        router: TicTacToeWeb.Router,
+        statics: TicTacToeWeb.static_paths()
     end
   end
 

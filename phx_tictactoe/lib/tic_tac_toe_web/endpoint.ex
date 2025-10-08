@@ -1,13 +1,13 @@
-defmodule PhxTictactoeWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :phx_tictactoe
+defmodule TicTacToeWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :tic_tac_toe
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
-    key: "_phx_tictactoe_key",
-    signing_salt: "wQfeC6Ro",
+    key: "_tic_tac_toe_key",
+    signing_salt: "GLhEQGsx",
     same_site: "Lax"
   ]
 
@@ -21,15 +21,15 @@ defmodule PhxTictactoeWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :phx_tictactoe,
+    from: :tic_tac_toe,
     gzip: false,
-    only: PhxTictactoeWeb.static_paths()
+    only: TicTacToeWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
     plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :phx_tictactoe
+    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :tic_tac_toe
   end
 
   plug Phoenix.LiveDashboard.RequestLogger,
@@ -47,5 +47,5 @@ defmodule PhxTictactoeWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-  plug PhxTictactoeWeb.Router
+  plug TicTacToeWeb.Router
 end
