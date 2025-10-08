@@ -1,7 +1,7 @@
 
 
 # lib/tic_tac_toe/game/move.ex
-defmodule TicTacToe.Game.Move do
+defmodule TicTacToe.Move.Move do
   use Ecto.Schema
   import Ecto.Changeset
 
