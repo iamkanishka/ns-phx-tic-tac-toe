@@ -1,7 +1,7 @@
 # lib/tic_tac_toe_web/channels/game_channel.ex
 defmodule TicTacToeWeb.GameChannel do
   use TicTacToeWeb, :channel
-  alias TicTacToe.Game
+  alias TicTacToe.Game.GameContext, as: Game
   alias TicTacToe.Guardian
 
   def join("game:" <> game_id, _params, socket) do
