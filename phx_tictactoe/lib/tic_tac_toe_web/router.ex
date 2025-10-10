@@ -1,12 +1,20 @@
 defmodule TicTacToeWeb.Router do
   use TicTacToeWeb, :router
+ import Plug.Conn
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug CORSPlug, origin: "*"
   end
 
   scope "/api", TicTacToeWeb do
     pipe_through :api
+
+    post "/games", GameController, :create
+    get "/games/stats", GameController, :stats
+    get "/games/waiting", GameController, :waiting_games
+    get "/games/:id", GameController, :show
+    get "/games", GameController, :index
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
