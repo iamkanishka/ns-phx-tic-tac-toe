@@ -20,7 +20,7 @@ config :tic_tac_toe, TicTacToeWeb.Endpoint,
     layout: false
   ],
   pubsub_server: TicTacToe.PubSub,
-  live_view: [signing_salt: "vpQoqwe8"]
+  live_view: [signing_salt: "CJmz4Xvz"]
 
 # Configures the mailer
 #

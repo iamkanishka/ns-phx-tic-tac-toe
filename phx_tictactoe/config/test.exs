@@ -17,7 +17,7 @@ config :tic_tac_toe, TicTacToe.Repo,
 # you can enable the server option below.
 config :tic_tac_toe, TicTacToeWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "l3rnrC8dTQomahDoM2td+GkqpPg6rhg0ebLU/1HjD42qo94qS5cAzhSnbIaqDeta",
+  secret_key_base: "5yo9XY8P7z4nk/1y4JKhGgjJM168CrGckRqxt8OkNB9tdlYrLUdf82qEyaEOUcBr",
   server: false
 
 # In test we don't send emails

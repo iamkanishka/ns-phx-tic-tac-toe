@@ -23,7 +23,7 @@ config :tic_tac_toe, TicTacToeWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "bxTGbyvitZnSyWMGLwiV7olZSEFSVOfGFjC0d42h1DMRGFY4XMaxb//EZkvidrz0",
+  secret_key_base: "7o6MTKc/qqZAQRMCuNsl9Vx9eUkBko4JTYmsrxdRRCNGwkcaVftVslzmkB7kqoBw",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:tic_tac_toe, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:tic_tac_toe, ~w(--watch)]}
