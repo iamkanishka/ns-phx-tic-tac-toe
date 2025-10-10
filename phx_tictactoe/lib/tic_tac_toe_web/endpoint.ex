@@ -1,33 +1,37 @@
 defmodule TicTacToeWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :tic_tac_toe
 
+  socket "/socket", TicTacToeWeb.UserSocket,
+    websocket: [timeout: 45_000],
+    longpoll: false
+
+
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
+  # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
     key: "_tic_tac_toe_key",
-    signing_salt: "GLhEQGsx",
+    signing_salt: "4hwPOqKU",
     same_site: "Lax"
   ]
 
-  # ✅ Add your custom game WebSocket endpoint here
-  socket "/game", TicTacToeWeb.GameChannel,
-    websocket: true,
-    longpoll: false
-
-  # Phoenix LiveView socket
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
-  # Serve static files
+  # Serve at "/" the static files from "priv/static" directory.
+  #
+  # You should set gzip to true if you are running phx.digest
+  # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
     from: :tic_tac_toe,
     gzip: false,
     only: TicTacToeWeb.static_paths()
 
-  # Code reloading
+  # Code reloading can be explicitly enabled under the
+  # :code_reloader configuration of your endpoint.
   if code_reloading? do
     plug Phoenix.CodeReloader
     plug Phoenix.Ecto.CheckRepoStatus, otp_app: :tic_tac_toe
