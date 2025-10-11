@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { SoundService, SoundType } from './sound.service';
+import { HapticService, HapticIntensity } from './haptics.service';
 
 export enum Player {
   X = 'X',
@@ -26,6 +27,9 @@ export interface GameSettings {
   animationSpeed: 'fast' | 'normal' | 'slow';
   soundEnabled: boolean;
   vibrationEnabled: boolean;
+  soundVolume: number;
+  showHints: boolean;
+  darkMode: boolean;
 }
 
 @Injectable({
@@ -37,7 +41,10 @@ export class GameService implements OnDestroy {
   private defaultSettings: GameSettings = {
     animationSpeed: 'normal',
     soundEnabled: true,
-    vibrationEnabled: true
+    vibrationEnabled: true,
+    soundVolume: 0.7,
+    showHints: true,
+    darkMode: false
   };
 
   private initialBoard: GameBoard = {
@@ -55,9 +62,15 @@ export class GameService implements OnDestroy {
   public board$: Observable<GameBoard> = this.boardSubject.asObservable();
   public settings$: Observable<GameSettings> = this.settingsSubject.asObservable();
 
+  constructor(
+    private soundService: SoundService,
+    private hapticService: HapticService
+  ) {}
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.soundService.dispose();
   }
 
   get gameBoard(): GameBoard {
@@ -92,47 +105,52 @@ export class GameService implements OnDestroy {
     return this.settingsSubject.value;
   }
 
-// In game.service.ts, update the makeMove method:
-makeMove(index: number): void {
-  const board = this.gameBoard;
-  
-  // Validate move
-  if (board.state !== GameState.Playing || board.cells[index] !== '') {
-    this.triggerHapticFeedback('error');
-    return;
+  makeMove(index: number): boolean {
+    const board = this.gameBoard;
+    
+    // Validate move
+    if (board.state !== GameState.Playing || board.cells[index] !== '') {
+      this.soundService.play(SoundType.Invalid, this.settings.soundVolume);
+      this.hapticService.trigger(HapticIntensity.Error);
+      return false;
+    }
+
+    // Make the move
+    const newCells = [...board.cells];
+    newCells[index] = board.currentPlayer;
+
+    // Check game state
+    const winningLine = this.checkWin(newCells);
+    const isDraw = !winningLine && newCells.every(cell => cell !== '');
+
+    // Update scores
+    const newScores = { ...board.scores };
+    
+    if (winningLine) {
+      newScores[board.currentPlayer]++;
+      this.soundService.play(SoundType.Win, this.settings.soundVolume);
+      this.hapticService.trigger(HapticIntensity.Success);
+    } else if (isDraw) {
+      newScores.draws++;
+      this.soundService.play(SoundType.Draw, this.settings.soundVolume);
+      this.hapticService.trigger(HapticIntensity.Warning);
+    } else {
+      this.soundService.play(SoundType.Move, this.settings.soundVolume);
+      this.hapticService.trigger(HapticIntensity.Light);
+    }
+
+    const newBoard: GameBoard = {
+      cells: newCells,
+      currentPlayer: board.currentPlayer === Player.X ? Player.O : Player.X,
+      state: winningLine ? GameState.Won : isDraw ? GameState.Draw : GameState.Playing,
+      winner: winningLine ? board.currentPlayer : null,
+      winningLine: winningLine || null,
+      scores: newScores
+    };
+
+    this.boardSubject.next(newBoard);
+    return true;
   }
-
-  // Make the move
-  const newCells = [...board.cells];
-  newCells[index] = board.currentPlayer;
-
-  // Check game state
-  const winningLine = this.checkWin(newCells);
-  const isDraw = !winningLine && newCells.every(cell => cell !== '');
-
-  // Update scores
-  const newScores = { ...board.scores };
-  if (winningLine) {
-    newScores[board.currentPlayer]++;
-    this.triggerHapticFeedback('success');
-  } else if (isDraw) {
-    newScores.draws++;
-    this.triggerHapticFeedback('medium');
-  } else {
-    this.triggerHapticFeedback('light');
-  }
-
-  const newBoard: GameBoard = {
-    cells: newCells,
-    currentPlayer: board.currentPlayer === Player.X ? Player.O : Player.X,
-    state: winningLine ? GameState.Won : isDraw ? GameState.Draw : GameState.Playing,
-    winner: winningLine ? board.currentPlayer : null,
-    winningLine: winningLine || null,
-    scores: newScores
-  };
-
-  this.boardSubject.next(newBoard);
-}
 
   private checkWin(cells: string[]): number[] | null {
     const winPatterns = [
@@ -152,7 +170,8 @@ makeMove(index: number): void {
   }
 
   resetGame(): void {
-    this.triggerHapticFeedback('light');
+    this.soundService.play(SoundType.Reset, this.settings.soundVolume);
+    this.hapticService.trigger(HapticIntensity.Medium);
     this.boardSubject.next({ 
       ...this.initialBoard, 
       scores: this.gameBoard.scores 
@@ -160,21 +179,105 @@ makeMove(index: number): void {
   }
 
   resetScores(): void {
-    this.triggerHapticFeedback('medium');
+    this.soundService.play(SoundType.Click, this.settings.soundVolume);
+    this.hapticService.trigger(HapticIntensity.Medium);
     this.boardSubject.next({ ...this.initialBoard });
   }
 
   updateSettings(newSettings: Partial<GameSettings>): void {
-    this.settingsSubject.next({
+    const updated = {
       ...this.settings,
       ...newSettings
-    });
+    };
+    
+    this.settingsSubject.next(updated);
+    this.soundService.setEnabled(updated.soundEnabled);
+    this.hapticService.setEnabled(updated.vibrationEnabled);
+    
+    // Save to local storage
+    this.saveSettings(updated);
   }
 
-  private triggerHapticFeedback(type: 'light' | 'medium' | 'heavy' | 'success' | 'error'): void {
-    if (!this.settings.vibrationEnabled) return;
+  private saveSettings(settings: GameSettings): void {
+    // Implement local storage saving
+    console.log('Saving settings:', settings);
+  }
 
-    // NativeScript haptic feedback implementation would go here
-    console.log(`Haptic feedback: ${type}`);
+  // AI Helper - Suggest best move
+  getSuggestedMove(): number | null {
+    const cells = this.cells;
+    const player = this.currentPlayer;
+    const opponent = player === Player.X ? Player.O : Player.X;
+
+    // 1. Check if we can win
+    const winMove = this.findWinningMove(cells, player);
+    if (winMove !== null) return winMove;
+
+    // 2. Block opponent from winning
+    const blockMove = this.findWinningMove(cells, opponent);
+    if (blockMove !== null) return blockMove;
+
+    // 3. Take center if available
+    if (cells[4] === '') return 4;
+
+    // 4. Take corners
+    const corners = [0, 2, 6, 8];
+    for (const corner of corners) {
+      if (cells[corner] === '') return corner;
+    }
+
+    // 5. Take any available spot
+    return cells.findIndex(cell => cell === '');
+  }
+
+  private findWinningMove(cells: string[], player: string): number | null {
+    const winPatterns = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    for (const pattern of winPatterns) {
+      const [a, b, c] = pattern;
+      const line = [cells[a], cells[b], cells[c]];
+      const playerCount = line.filter(cell => cell === player).length;
+      const emptyCount = line.filter(cell => cell === '').length;
+
+      if (playerCount === 2 && emptyCount === 1) {
+        if (cells[a] === '') return a;
+        if (cells[b] === '') return b;
+        if (cells[c] === '') return c;
+      }
+    }
+
+    return null;
+  }
+
+  updateBoardFromServer(cells: string[], status: string, winner: string | null, winningLine: number[] | null, currentPlayer: string): void {
+    let gameState: GameState;
+    
+    switch (status) {
+      case 'won':
+        gameState = GameState.Won;
+        this.soundService.play(SoundType.Win, this.settings.soundVolume);
+        break;
+      case 'draw':
+        gameState = GameState.Draw;
+        this.soundService.play(SoundType.Draw, this.settings.soundVolume);
+        break;
+      default:
+        gameState = GameState.Playing;
+    }
+
+    const currentBoard = this.gameBoard;
+    
+    this.boardSubject.next({
+      cells: cells,
+      state: gameState,
+      currentPlayer: currentPlayer === 'X' ? Player.X : Player.O,
+      winner: winner ? (winner === 'X' ? Player.X : Player.O) : null,
+      winningLine: winningLine,
+      scores: currentBoard.scores
+    });
   }
 }
