@@ -4,8 +4,8 @@ defmodule TicTacToeWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-    plug CORSPlug, origin: "*"
-  end
+    plug  TicTacToeWeb.Plugs.CORS
+ end
 
   scope "/api", TicTacToeWeb do
     pipe_through :api
