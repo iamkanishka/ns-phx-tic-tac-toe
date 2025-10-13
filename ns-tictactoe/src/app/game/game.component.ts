@@ -1,16 +1,23 @@
 // ============================================
 // game.component.ts - COMPLETE WITH MULTIPLAYER
 // ============================================
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
-import { GameService, GameState, Player, GameSettings } from './game.service';
-import { GameSocketService, ConnectionStatus } from './game-socket.service';
-import { GameApiService } from './game-api.service';
-import { AnimationService } from './animation.service'; 
-import { ClipboardService } from './nativeclipboard.service';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { View } from '@nativescript/core';
-import { Dialogs } from '@nativescript/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+} from "@angular/core";
+import { GameService, GameState, Player, GameSettings } from "./game.service";
+import { GameSocketService, ConnectionStatus } from "./game-socket.service";
+import { GameApiService } from "./game-api.service";
+import { AnimationService } from "./animation.service";
+import { ClipboardService } from "./nativeclipboard.service";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
+import { View } from "@nativescript/core";
+import { Dialogs } from "@nativescript/core";
 
 interface CellPosition {
   row: number;
@@ -19,8 +26,8 @@ interface CellPosition {
 }
 
 export enum GameMode {
-  Offline = 'offline',
-  Online = 'online'
+  Offline = "offline",
+  Online = "online",
 }
 
 interface WaitingGame {
@@ -31,19 +38,19 @@ interface WaitingGame {
 }
 
 @Component({
-  selector: 'app-game',
-  templateUrl: './game.component.html',
-  styleUrls: ['./game.component.css']
+  selector: "app-game",
+  templateUrl: "./game.component.html",
+  styleUrls: ["./game.component.css"],
 })
 export class GameComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   // Enums for template
   GameState = GameState;
   Player = Player;
   GameMode = GameMode;
   ConnectionStatus = ConnectionStatus;
-  
+
   // Animation states
   public cellStates: boolean[] = Array(9).fill(false);
   public showSettings = false;
@@ -52,7 +59,7 @@ export class GameComponent implements OnInit, OnDestroy {
   public isAnimating = false;
   public cellPositions: CellPosition[] = [];
   public suggestedMove: number | null = null;
-  
+
   // Game stats
   public gamesPlayed = 0;
   public xWinRate = 0;
@@ -60,20 +67,20 @@ export class GameComponent implements OnInit, OnDestroy {
   public drawRate = 0;
   public currentStreak = 0;
   public longestStreak = 0;
-  
+
   // Settings
   public settings: GameSettings;
-  
+
   // Multiplayer state
   public currentMode: GameMode = GameMode.Offline;
   public showLobby = false;
   public showCreateGame = false;
   public showJoinGame = false;
-  public playerName = '';
-  public playerId = '';
-  public gameIdToJoin = '';
+  public playerName = "";
+  public playerId = "";
+  public gameIdToJoin = "";
   public currentGameId: string | null = null;
-  public mySymbol: 'X' | 'O' | null = null;
+  public mySymbol: "X" | "O" | null = null;
   public opponentConnected = false;
   public connectionStatus: ConnectionStatus = ConnectionStatus.Disconnected;
   public waitingGames: WaitingGame[] = [];
@@ -105,7 +112,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
     this.gameService.settings$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(settings => {
+      .subscribe((settings) => {
         this.settings = settings;
         this.cdRef.detectChanges();
       });
@@ -113,7 +120,7 @@ export class GameComponent implements OnInit, OnDestroy {
     // Subscribe to multiplayer game state
     this.gameSocketService.gameState$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(game => {
+      .subscribe((game) => {
         if (game && this.currentMode === GameMode.Online) {
           // Update local game service with server state
           this.gameService.updateBoardFromServer(
@@ -129,7 +136,7 @@ export class GameComponent implements OnInit, OnDestroy {
     // Subscribe to connection status
     this.gameSocketService.connectionStatus$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(status => {
+      .subscribe((status) => {
         this.connectionStatus = status;
         this.cdRef.detectChanges();
       });
@@ -137,10 +144,10 @@ export class GameComponent implements OnInit, OnDestroy {
     // Subscribe to opponent connection
     this.gameSocketService.opponentConnected$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(connected => {
+      .subscribe((connected) => {
         this.opponentConnected = connected;
         if (connected && this.currentMode === GameMode.Online) {
-          this.showToast('Opponent joined! Game starting...', 'success');
+          this.showToast("Opponent joined! Game starting...", "success");
         }
         this.cdRef.detectChanges();
       });
@@ -148,18 +155,18 @@ export class GameComponent implements OnInit, OnDestroy {
     // Subscribe to player symbol
     this.gameSocketService.myPlayerSymbol$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(symbol => {
+      .subscribe((symbol) => {
         this.mySymbol = symbol;
       });
 
     // Subscribe to errors
     this.gameSocketService.error$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(error => {
+      .subscribe((error) => {
         console.log(error);
-        
+
         if (error) {
-          this.showToast(error, 'error');
+          this.showToast(error, "error");
         }
       });
   }
@@ -180,7 +187,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.cellPositions.push({
         row: Math.floor(i / 3),
         col: i % 3,
-        index: i
+        index: i,
       });
     }
   }
@@ -195,16 +202,15 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.currentMode === GameMode.Online) {
       // Online mode - check if it's player's turn
       if (!this.gameSocketService.isMyTurn()) {
-        this.showToast("Not your turn!", 'error');
+        this.showToast("Not your turn!", "error");
         return;
       }
 
-      if (this.gameService.cells[index] !== '') {
+      if (this.gameService.cells[index] !== "") {
         return;
       }
 
       this.gameSocketService.makeMove(index);
-      
     } else {
       // Offline mode
       if (this.gameService.gameState !== GameState.Playing) {
@@ -220,7 +226,7 @@ export class GameComponent implements OnInit, OnDestroy {
       } else {
         await this.delay(this.getAnimationSpeed());
       }
-      
+
       const success = this.gameService.makeMove(index);
 
       if (success && this.gameService.gameState !== GameState.Playing) {
@@ -239,7 +245,7 @@ export class GameComponent implements OnInit, OnDestroy {
         title: "Leave Game",
         message: "Are you sure you want to leave this game?",
         okButtonText: "Yes",
-        cancelButtonText: "No"
+        cancelButtonText: "No",
       });
 
       if (confirmed) {
@@ -252,7 +258,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.isAnimating = true;
       this.cellStates = Array(9).fill(false);
       this.suggestedMove = null;
-      
+
       await this.delay(300);
       this.gameService.resetGame();
       this.isAnimating = false;
@@ -264,7 +270,7 @@ export class GameComponent implements OnInit, OnDestroy {
       title: "Reset Scores",
       message: "Are you sure you want to reset all scores and statistics?",
       okButtonText: "Yes",
-      cancelButtonText: "No"
+      cancelButtonText: "No",
     });
 
     if (confirmed) {
@@ -286,9 +292,6 @@ export class GameComponent implements OnInit, OnDestroy {
     // this.loadWaitingGames();
 
     // this.createOnlineGame()
-    
-    
-
   }
 
   switchToOfflineMode(): void {
@@ -307,7 +310,7 @@ export class GameComponent implements OnInit, OnDestroy {
     try {
       this.waitingGames = await this.gameSocketService.getWaitingGames();
     } catch (error: any) {
-      this.showToast('Failed to load games', 'error');
+      this.showToast("Failed to load games", "error");
     } finally {
       this.isLoadingGames = false;
     }
@@ -325,38 +328,39 @@ export class GameComponent implements OnInit, OnDestroy {
 
   cancelCreateGame(): void {
     this.showCreateGame = false;
-    this.playerName = '';
+    this.playerName = "";
   }
 
   cancelJoinGame(): void {
     this.showJoinGame = false;
-    this.playerName = '';
-    this.gameIdToJoin = '';
+    this.playerName = "";
+    this.gameIdToJoin = "";
   }
 
   async createOnlineGame(): Promise<void> {
-    console.log('Name'  + this.playerName);
-    
+    console.log("Name" + this.playerName);
+
     if (!this.playerName.trim()) {
-      this.showToast('Please enter your name', 'error');
+      this.showToast("Please enter your name", "error");
       return;
     }
-
-    try {
+   
+   try {
       this.currentGameId = await this.gameSocketService.createGame(
         this.playerId,
         this.playerName
       );
-      
+
+      console.log(this.currentGameId + "Game Created");
+
       this.showLobby = false;
       this.showCreateGame = false;
-      
-      this.showToast('Game created! Share the ID with your friend.', 'success');
-      
+
+      this.showToast("Game created! Share the ID with your friend.", "success");
     } catch (error: any) {
-      console.log(error);
-      
-      this.showToast('Failed to create game', 'error');
+      console.log(error + "Error Checking");
+
+      this.showToast("Failed to create game", "error");
     }
   }
 
@@ -367,7 +371,7 @@ export class GameComponent implements OnInit, OnDestroy {
         message: "What's your name?",
         okButtonText: "Join",
         cancelButtonText: "Cancel",
-        defaultText: "Player 2"
+        defaultText: "Player 2",
       });
 
       if (!result.result) return;
@@ -375,21 +379,24 @@ export class GameComponent implements OnInit, OnDestroy {
     }
 
     try {
-      await this.gameSocketService.joinGame(gameId, this.playerId, this.playerName);
+      await this.gameSocketService.joinGame(
+        gameId,
+        this.playerId,
+        this.playerName
+      );
       this.currentGameId = gameId;
       this.showLobby = false;
       this.showJoinGame = false;
-      
-      this.showToast('Joined game successfully!', 'success');
-      
+
+      this.showToast("Joined game successfully!", "success");
     } catch (error: any) {
-      this.showToast('Failed to join game', 'error');
+      this.showToast("Failed to join game", "error");
     }
   }
 
   async joinGameById(): Promise<void> {
     if (!this.gameIdToJoin.trim()) {
-      this.showToast('Please enter a Game ID', 'error');
+      this.showToast("Please enter a Game ID", "error");
       return;
     }
 
@@ -399,21 +406,21 @@ export class GameComponent implements OnInit, OnDestroy {
   async copyGameId(): Promise<void> {
     if (this.currentGameId) {
       this.clipboardService.copyToClipboard(this.currentGameId);
-      this.showToast('Game ID copied to clipboard!', 'success');
+      this.showToast("Game ID copied to clipboard!", "success");
     }
   }
 
   async shareGameId(): Promise<void> {
     if (this.currentGameId) {
       const message = `Join my Tic Tac Toe game!\n\nGame ID: ${this.currentGameId}\n\nCopy this ID and paste it in the Join Game screen.`;
-      
+
       // You can use native share dialog here
       this.clipboardService.copyToClipboard(this.currentGameId);
-      
+
       await Dialogs.alert({
         title: "Share Game",
         message: message,
-        okButtonText: "OK"
+        okButtonText: "OK",
       });
     }
   }
@@ -433,12 +440,15 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   showHintMove(): void {
-    if (!this.settings.showHints || this.gameService.gameState !== GameState.Playing) {
+    if (
+      !this.settings.showHints ||
+      this.gameService.gameState !== GameState.Playing
+    ) {
       return;
     }
 
     if (this.currentMode === GameMode.Online) {
-      this.showToast('Hints not available in online mode', 'info');
+      this.showToast("Hints not available in online mode", "info");
       return;
     }
 
@@ -452,9 +462,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   onAnimationSpeedChange(args: any): void {
-    const speeds = ['fast', 'normal', 'slow'];
+    const speeds = ["fast", "normal", "slow"];
     this.gameService.updateSettings({
-      animationSpeed: speeds[args.newIndex] as 'fast' | 'normal' | 'slow'
+      animationSpeed: speeds[args.newIndex] as "fast" | "normal" | "slow",
     });
   }
 
@@ -475,29 +485,32 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   getCellClass(cell: string, index: number): string[] {
-    const classes = ['cell'];
-    
+    const classes = ["cell"];
+
     if (cell) {
       classes.push(`cell-${cell.toLowerCase()}`);
     } else {
-      classes.push('cell-empty');
+      classes.push("cell-empty");
     }
 
     if (this.gameService.winningLine?.includes(index)) {
-      classes.push('winning-cell');
+      classes.push("winning-cell");
     }
 
     if (this.cellStates[index]) {
-      classes.push('cell-pop');
+      classes.push("cell-pop");
     }
 
     if (this.suggestedMove === index && this.showHint) {
-      classes.push('cell-hint');
+      classes.push("cell-hint");
     }
 
     // Disable cell if not player's turn in online mode
-    if (this.currentMode === GameMode.Online && !this.gameSocketService.isMyTurn()) {
-      classes.push('cell-disabled');
+    if (
+      this.currentMode === GameMode.Online &&
+      !this.gameSocketService.isMyTurn()
+    ) {
+      classes.push("cell-disabled");
     }
 
     return classes;
@@ -506,7 +519,7 @@ export class GameComponent implements OnInit, OnDestroy {
   getStatusMessage(): string {
     if (this.currentMode === GameMode.Online) {
       if (!this.opponentConnected) {
-        return 'Waiting for opponent...';
+        return "Waiting for opponent...";
       }
 
       if (this.gameService.gameState === GameState.Playing) {
@@ -518,21 +531,21 @@ export class GameComponent implements OnInit, OnDestroy {
 
     const state = this.gameService.gameState;
     const currentPlayer = this.gameService.currentPlayer;
-    
+
     switch (state) {
       case GameState.Playing:
         return `Player ${currentPlayer}'s Turn`;
       case GameState.Won:
         if (this.currentMode === GameMode.Online) {
           return this.gameService.winner === this.mySymbol
-            ? '🎉 You Won! 🎉'
-            : '😢 You Lost';
+            ? "🎉 You Won! 🎉"
+            : "😢 You Lost";
         }
         return `🎉 Player ${this.gameService.winner} Wins! 🎉`;
       case GameState.Draw:
         return "🤝 It's a Draw!";
       default:
-        return 'Game Over';
+        return "Game Over";
     }
   }
 
@@ -544,41 +557,41 @@ export class GameComponent implements OnInit, OnDestroy {
     }
 
     const state = this.gameService.gameState;
-    
+
     if (state !== GameState.Playing) {
       return 'Tap "New Game" to play again';
     }
-    
+
     if (this.currentStreak > 2) {
       return `🔥 ${this.currentStreak} game streak!`;
     }
-    
-    return 'Tap an empty cell to make your move';
+
+    return "Tap an empty cell to make your move";
   }
 
   getConnectionStatusText(): string {
     switch (this.connectionStatus) {
       case ConnectionStatus.Connected:
-        return 'Connected';
+        return "Connected";
       case ConnectionStatus.Connecting:
-        return 'Connecting...';
+        return "Connecting...";
       case ConnectionStatus.Error:
-        return 'Connection Error';
+        return "Connection Error";
       default:
-        return 'Disconnected';
+        return "Disconnected";
     }
   }
 
   getConnectionStatusClass(): string {
     switch (this.connectionStatus) {
       case ConnectionStatus.Connected:
-        return 'status-connected';
+        return "status-connected";
       case ConnectionStatus.Connecting:
-        return 'status-connecting';
+        return "status-connecting";
       case ConnectionStatus.Error:
-        return 'status-error';
+        return "status-error";
       default:
-        return 'status-disconnected';
+        return "status-disconnected";
     }
   }
 
@@ -589,7 +602,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private updateStats(board: any): void {
     if (board.state === GameState.Won || board.state === GameState.Draw) {
       this.gamesPlayed++;
-      
+
       if (board.state === GameState.Won) {
         if (board.winner === Player.X) {
           this.currentStreak++;
@@ -620,19 +633,22 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private saveStats(): void {
     // Implement ApplicationSettings saving
-    console.log('Saving stats');
+    console.log("Saving stats");
   }
 
-  private showToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+  private showToast(
+    message: string,
+    type: "success" | "error" | "info" = "info"
+  ): void {
     // Implement toast notification
     console.log(`[${type.toUpperCase()}] ${message}`);
-    
+
     // You can use a toast library or native dialog
-    if (type === 'error') {
+    if (type === "error") {
       Dialogs.alert({
         title: "Error",
         message: message,
-        okButtonText: "OK"
+        okButtonText: "OK",
       });
     }
   }
@@ -642,14 +658,14 @@ export class GameComponent implements OnInit, OnDestroy {
   // ============================================
 
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private getAnimationSpeed(): number {
     const speeds = {
       fast: 100,
       normal: 200,
-      slow: 400
+      slow: 400,
     };
     return speeds[this.settings.animationSpeed];
   }
@@ -658,7 +674,7 @@ export class GameComponent implements OnInit, OnDestroy {
     const cell = this.gameService.cells[index];
     const row = Math.floor(index / 3) + 1;
     const col = (index % 3) + 1;
-    
+
     if (cell) {
       return `Cell ${row},${col} contains ${cell}`;
     }
@@ -672,16 +688,16 @@ export class GameComponent implements OnInit, OnDestroy {
 
   getBoardAriaLabel(): string {
     const state = this.gameService.gameState;
-    
+
     switch (state) {
       case GameState.Playing:
         return `Tic Tac Toe game in progress. Current player: ${this.gameService.currentPlayer}`;
       case GameState.Won:
         return `Tic Tac Toe game completed. Player ${this.gameService.winner} wins!`;
       case GameState.Draw:
-        return 'Tic Tac Toe game completed. The game is a draw.';
+        return "Tic Tac Toe game completed. The game is a draw.";
       default:
-        return 'Tic Tac Toe game board';
+        return "Tic Tac Toe game board";
     }
   }
 }
