@@ -1,6 +1,6 @@
 <!-- game.component.html - COMPLETE MULTIPLAYER VERSION -->
 <Page class="page">
-    <ActionBar [title]="currentMode === GameMode.Offline ? 'Tic Tac Toe' : 'Online Multiplayer'" class="action-bar">
+    <ActionBar [title]="currentMode === GameMode.Offline ? 'TTT' : 'Online Multiplayer'"  color="white">
         <ActionItem *ngIf="!showLobby" (tap)="toggleStats()" ios.position="left" android.position="actionBar">
             <Label text="📊" class="action-icon" accessibilityLabel="View statistics"></Label>
         </ActionItem>
@@ -16,7 +16,8 @@
                  MODE SELECTION SCREEN
                  ============================================ -->
             <StackLayout *ngIf="currentMode === GameMode.Offline && !showLobby" class="mode-selector">
-                <Label text="TIC TAC TOE" class="game-title"></Label>
+                <Label text="TIC TAC TOE" color="white" class="game-title"></Label>
+             
                 <Label text="Choose Game Mode" class="mode-subtitle"></Label>
                 
                 <Button text="🎮 Play Offline" 
@@ -24,11 +25,13 @@
                         class="btn btn-mode btn-offline"
                         accessibilityLabel="Play offline against local player"></Button>
                 
-                <Button text="🌐 Play Online" 
+                <Button text="🌐 🌐 Play Online" 
                         (tap)="switchToOnlineMode()" 
                         class="btn btn-mode btn-online"
                         accessibilityLabel="Play online with friends"></Button>
+                          
             </StackLayout>
+       
 
             <!-- ============================================
                  ONLINE LOBBY
@@ -72,7 +75,7 @@
                     <TextField [(ngModel)]="playerName" 
                               hint="Enter your name" 
                               class="input-field"
-                              keyboardType="text"
+                             [keyboardType]="'text'"
                               returnKeyType="next"
                               autocorrect="false"
                               accessibilityLabel="Player name input"></TextField>
@@ -80,7 +83,7 @@
                     <TextField [(ngModel)]="gameIdToJoin" 
                               hint="Paste Game ID" 
                               class="input-field"
-                              keyboardType="text"
+                             [keyboardType]="'text'"
                               returnKeyType="done"
                               autocorrect="false"
                               accessibilityLabel="Game ID input"></TextField>
@@ -205,7 +208,8 @@
                            [class.playing]="gameService.gameState === GameState.Playing"
                            [class.won]="gameService.gameState === GameState.Won"
                            [class.draw]="gameService.gameState === GameState.Draw"
-                           [accessibilityLabel]="getStatusMessage()"></Label>
+                           [accessibilityLabel]="getStatusMessage()" color="white"></Label>
+                           
                     <Label [text]="getStatusSubtitle()" 
                            class="status-subtitle"
                            [accessibilityLabel]="getStatusSubtitle()"></Label>
@@ -218,18 +222,18 @@
                            accessibilityRole="summary"
                            accessibilityLabel="Score board">
                     <StackLayout col="0" class="score-item">
-                        <Label text="Player X" class="score-label player-x"></Label>
-                        <Label [text]="gameService.scores.X" class="score-value"></Label>
+                        <Label text="X" class="score-label player-x"></Label>
+                        <Label [text]="gameService.scores.X"  color="white" class="score-value score-value-color"></Label>
                         <Label *ngIf="xWinRate > 0" [text]="xWinRate + '%'" class="win-rate"></Label>
                     </StackLayout>
                     <StackLayout col="1" class="score-item">
-                        <Label text="Draws" class="score-label draw"></Label>
-                        <Label [text]="gameService.scores.draws" class="score-value"></Label>
+                        <Label text="Draws" color="orange" class="score-label draw"></Label>
+                        <Label [text]="gameService.scores.draws" color="white"  class="score-value score-value-color"></Label>
                         <Label *ngIf="drawRate > 0" [text]="drawRate + '%'" class="win-rate"></Label>
                     </StackLayout>
                     <StackLayout col="2" class="score-item">
-                        <Label text="Player O" class="score-label player-o"></Label>
-                        <Label [text]="gameService.scores.O" class="score-value"></Label>
+                        <Label text="O" class="score-label player-o"></Label>
+                        <Label [text]="gameService.scores.O" color="white" class="score-value"></Label>
                         <Label *ngIf="oWinRate > 0" [text]="oWinRate + '%'" class="win-rate"></Label>
                     </StackLayout>
                 </GridLayout>
@@ -351,7 +355,7 @@
                         
                         <StackLayout class="progress-item">
                             <GridLayout columns="60, *" class="progress-header">
-                                <Label col="0" text="Player X" class="progress-label player-x"></Label>
+                                <Label col="0" text="X" class="progress-label player-x"></Label>
                                 <Label col="1" [text]="xWinRate + '%'" class="progress-value"></Label>
                             </GridLayout>
                             <StackLayout class="progress-bar">
@@ -371,7 +375,7 @@
                         
                         <StackLayout class="progress-item">
                             <GridLayout columns="60, *" class="progress-header">
-                                <Label col="0" text="Player O" class="progress-label player-o"></Label>
+                                <Label col="0" text="O" class="progress-label player-o"></Label>
                                 <Label col="1" [text]="oWinRate + '%'" class="progress-value"></Label>
                             </GridLayout>
                             <StackLayout class="progress-bar">
