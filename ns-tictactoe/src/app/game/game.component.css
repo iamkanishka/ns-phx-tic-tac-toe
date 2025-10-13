@@ -41,11 +41,7 @@
   font-family: 'System', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 }
 
-.action-bar {
-  background-color: transparent;
-  color: var(--text-light);
-  elevation: 0;
-}
+
 
 .action-icon {
   font-size: 24;
@@ -486,13 +482,13 @@
 }
 
 .game-title {
-  font-size: 34;
-  font-weight: 800;
-  color: var(--text-light);
+  font-size: 30;
+  font-weight: 300;
+ 
   text-align: center;
   margin-bottom: 10;
-  text-shadow: 2 2 8 rgba(0, 0, 0, 0.3);
-  letter-spacing: 3;
+ 
+  
 }
 
 .status-message {
@@ -581,6 +577,8 @@
   margin-bottom: 4;
   text-shadow: 2 2 6 rgba(0, 0, 0, 0.3);
 }
+
+
 
 .win-rate {
   font-size: 11;
@@ -1365,6 +1363,11 @@
   .score-value {
     font-size: 36;
   }
+
+  
+  .score-value-color {
+    color: #FFFFFF !important;
+  }
   
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
@@ -1532,7 +1535,7 @@ Button:focus,
   .game-title,
   .score-label,
   .score-value {
-    color: black !important;
+    color: white !important;
   }
 }
 
