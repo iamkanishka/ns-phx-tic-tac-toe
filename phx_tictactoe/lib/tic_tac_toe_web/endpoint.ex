@@ -3,7 +3,7 @@ defmodule TicTacToeWeb.Endpoint do
 
   socket "/socket", TicTacToeWeb.UserSocket,
     websocket: [timeout: 45_000],
-    longpoll: false
+    longpoll: [timeout: 45_000]
 
   @session_options [
     store: :cookie,
