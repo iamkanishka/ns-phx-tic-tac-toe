@@ -2,11 +2,12 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Subject } from "rxjs";
 import { Socket } from "phoenix";
 import { Http, HttpResponse, HttpRequestOptions } from "@nativescript/core";
- 
+const NativeWebSocket = require("@valor/nativescript-websockets").WebSocket;
+
 export interface MultiplayerGameState {
   id: string;
   cells: string[];
-  status: "waiting" | "playing" | "won" | "draw";
+  state: "waiting" | "playing" | "won" | "draw";
   current_player: "X" | "O";
   winner: "X" | "O" | null;
   winning_line: number[] | null;
@@ -67,7 +68,7 @@ export class GameSocketService implements OnDestroy {
   }
 
   // ========================================================
-  // Centralized HTTP handler
+  // HTTP helper
   // ========================================================
   private async handleRequest<T>(options: HttpRequestOptions): Promise<T> {
     try {
@@ -99,8 +100,6 @@ export class GameSocketService implements OnDestroy {
       headers: { "Content-Type": "application/json" },
       content: JSON.stringify(payload),
     });
-
-    console.log(data);
 
     await this.connectToGame(data.id, playerId, playerName);
     this.myPlayerSymbolSubject.next("X");
@@ -144,7 +143,7 @@ export class GameSocketService implements OnDestroy {
   }
 
   // ========================================================
-  // SOCKET CONNECTION
+  // SOCKET CONNECTION (NativeScript WebSocket)
   // ========================================================
   private async connectToGame(
     gameId: string,
@@ -156,9 +155,21 @@ export class GameSocketService implements OnDestroy {
         this.connectionStatusSubject.next(ConnectionStatus.Connecting);
         this.disconnect();
 
+        // ✅ Native WebSocket transport
+        const createTransport = () => {
+          const ws = new NativeWebSocket(`${this.WS_URL}?player_id=${playerId}&player_name=${playerName}`, [], {});
+          ws.on("open", () => console.log("NativeScript WebSocket connected"));
+          ws.on("error", (err) => console.error("NativeScript WebSocket error", err));
+          return ws;
+        };
+
         this.socket = new Socket(this.WS_URL, {
-          transport: globalThis.WebSocket, // 👈 Force WebSocket, skip longpoll
-          params: { player_id: playerId, player_name: playerName },
+          transport: NativeWebSocket,
+            params: {
+    player_id: playerId,
+    player_name: playerName,
+  },
+          heartbeatIntervalMs: 30000,
         });
 
         this.socket.connect();
@@ -181,12 +192,16 @@ export class GameSocketService implements OnDestroy {
             reject(error);
           });
       } catch (error) {
+        console.error("Connection error:", error);
         this.connectionStatusSubject.next(ConnectionStatus.Error);
         reject(error);
       }
     });
   }
 
+  // ========================================================
+  // CHANNEL LISTENERS
+  // ========================================================
   private setupChannelListeners(): void {
     if (!this.channel) return;
 
@@ -207,6 +222,9 @@ export class GameSocketService implements OnDestroy {
     });
   }
 
+  // ========================================================
+  // STATE MANAGEMENT
+  // ========================================================
   private updateGameState(data: any): void {
     const game: MultiplayerGameState = data;
     this.gameStateSubject.next(game);
@@ -215,9 +233,6 @@ export class GameSocketService implements OnDestroy {
     }
   }
 
-  // ========================================================
-  // GAME MOVES
-  // ========================================================
   makeMove(position: number): void {
     if (!this.channel) {
       this.errorSubject.next("Not connected to game");
@@ -258,10 +273,12 @@ export class GameSocketService implements OnDestroy {
   isMyTurn(): boolean {
     const game = this.gameStateSubject.value;
     const mySymbol = this.myPlayerSymbolSubject.value;
+    console.log(game.current_player ,mySymbol);
+    
     return !!(
       game &&
       mySymbol &&
-      game.status === "playing" &&
+      game.state === "playing" &&
       game.current_player === mySymbol
     );
   }
