@@ -3,7 +3,6 @@
   "main": "src/main.ts",
   "version": "1.0.0",
   "private": true,
-  
   "scripts": {
     "cnr": "ns clean && ns run android"
   },
@@ -20,6 +19,7 @@
     "@nativescript/core": "~8.9.0",
     "@nativescript/theme": "^3.1.0",
     "@valor/nativescript-feedback": "^2.0.2",
+    "@valor/nativescript-websockets": "^2.0.2",
     "nativescript-audio": "^6.2.6",
     "phoenix": "^1.8.1",
     "rxjs": "~7.8.0",
