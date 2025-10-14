@@ -2,8 +2,8 @@ defmodule TicTacToeWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :tic_tac_toe
 
   socket "/socket", TicTacToeWeb.UserSocket,
-    websocket: [timeout: 45_000],
-    longpoll: [timeout: 45_000]
+    websocket: true,
+    longpoll: false
 
   @session_options [
     store: :cookie,
