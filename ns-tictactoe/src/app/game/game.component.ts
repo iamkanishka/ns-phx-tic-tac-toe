@@ -125,7 +125,7 @@ export class GameComponent implements OnInit, OnDestroy {
           // Update local game service with server state
           this.gameService.updateBoardFromServer(
             game.cells,
-            game.status,
+            game.state,
             game.winner,
             game.winning_line,
             game.current_player
