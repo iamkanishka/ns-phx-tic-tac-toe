@@ -67,28 +67,33 @@ defmodule TicTacToe.Games.GameServer do
       !is_players_turn?(game, player_id) ->
         {:reply, {:error, :not_your_turn}, game}
 
-      Enum.at(game.board, position) != "" ->
+      Enum.at(game.board, position) != "-" ->
         {:reply, {:error, :position_taken}, game}
 
       true ->
         player_symbol = get_player_symbol(game, player_id)
-        new_board = List.replace_at(game.board, position, player_symbol)
+        current_board = game.board || List.duplicate("-", 9)
+        new_board = List.replace_at(current_board, position, player_symbol)
 
         winning_line = check_winner(new_board)
         new_moves = game.moves_count + 1
         is_draw = is_nil(winning_line) && new_moves >= 9
 
-        {status, winner} = cond do
-          winning_line -> {"won", player_symbol}
-          is_draw -> {"draw", nil}
-          true -> {"playing", nil}
-        end
+        {status, winner} =
+          cond do
+            winning_line -> {"won", player_symbol}
+            is_draw -> {"draw", nil}
+            true -> {"playing", nil}
+          end
 
-        next_player = if status == "playing" do
-          if player_symbol == "X", do: "O", else: "X"
-        else
-          game.current_player
-        end
+        next_player =
+          if status == "playing" do
+            if player_symbol == "X", do: "O", else: "X"
+          else
+            game.current_player
+          end
+
+        IO.inspect(new_board, label: "✅ Updated Board (to save)")
 
         updated_game =
           game
@@ -102,6 +107,7 @@ defmodule TicTacToe.Games.GameServer do
           })
           |> Repo.update!()
 
+        # Broadcast only once
         Phoenix.PubSub.broadcast(
           TicTacToe.PubSub,
           "game:#{game.id}",
@@ -114,7 +120,7 @@ defmodule TicTacToe.Games.GameServer do
 
   defp is_players_turn?(game, player_id) do
     (game.current_player == "X" && game.player_x_id == player_id) ||
-    (game.current_player == "O" && game.player_o_id == player_id)
+      (game.current_player == "O" && game.player_o_id == player_id)
   end
 
   defp get_player_symbol(game, player_id) do
@@ -123,17 +129,22 @@ defmodule TicTacToe.Games.GameServer do
 
   defp check_winner(board) do
     winning_combinations = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8],
-      [0, 3, 6], [1, 4, 7], [2, 5, 8],
-      [0, 4, 8], [2, 4, 6]
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
     ]
 
-    Enum.find_value(winning_combinations, fn [a, b, c] = combo ->
-      if Enum.at(board, a) != "" and
-         Enum.at(board, a) == Enum.at(board, b) and
-         Enum.at(board, b) == Enum.at(board, c) do
-        combo
-      end
-    end)
+   Enum.find_value(winning_combinations, fn [a, b, c] = combo ->
+  if Enum.at(board, a) not in ["", "-"] and
+       Enum.at(board, a) == Enum.at(board, b) and
+       Enum.at(board, b) == Enum.at(board, c) do
+    combo
+  end
+end)
   end
 end
