@@ -38,6 +38,7 @@ interface WaitingGame {
 }
 
 @Component({
+  standalone: false,
   selector: "app-game",
   templateUrl: "./game.component.html",
   styleUrls: ["./game.component.css"],
@@ -205,8 +206,9 @@ export class GameComponent implements OnInit, OnDestroy {
         this.showToast("Not your turn!", "error");
         return;
       }
+ 
 
-      if (this.gameService.cells[index] !== "") {
+      if (this.gameService.cells[index] !== "" && this.gameService.cells[index] !== "-" ) {
         return;
       }
 
