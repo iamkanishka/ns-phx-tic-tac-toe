@@ -244,13 +244,12 @@ export class GameSocketService implements OnDestroy {
       this.errorSubject.next("No active game");
       return;
     }
-
     if (!this.isMyTurn()) {
       this.errorSubject.next("Not your turn");
       return;
     }
 
-    if (currentGame.cells[position] !== "") {
+    if (currentGame.cells[position] !== "-") {
       this.errorSubject.next("Position already taken");
       return;
     }
@@ -273,8 +272,6 @@ export class GameSocketService implements OnDestroy {
   isMyTurn(): boolean {
     const game = this.gameStateSubject.value;
     const mySymbol = this.myPlayerSymbolSubject.value;
-    console.log(game.current_player ,mySymbol);
-    
     return !!(
       game &&
       mySymbol &&
