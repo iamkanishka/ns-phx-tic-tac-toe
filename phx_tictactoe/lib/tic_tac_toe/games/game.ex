@@ -9,7 +9,7 @@ defmodule TicTacToe.Games.Game do
     field :player_x_name, :string
     field :player_o_name, :string
     field :winner, :string
-    field :board, {:array, :string}, default: List.duplicate("", 9)
+    field :board, {:array, :string}, default: ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
     field :current_player, :string, default: "X"
     field :status, :string, default: "waiting"
     field :winning_line, {:array, :integer}
