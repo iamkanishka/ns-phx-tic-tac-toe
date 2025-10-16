@@ -3,7 +3,6 @@ import { NativeScriptModule } from "@nativescript/angular";
 import { NativeScriptFormsModule } from '@nativescript/angular';
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { FormsModule } from '@angular/forms';
 import { GameComponent } from "./game/game.component";
 
 
