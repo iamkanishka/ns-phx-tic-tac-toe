@@ -9,7 +9,7 @@ defmodule TicTacToe.Repo.Migrations.CreateGames do
       add :player_x_name, :string, null: false
       add :player_o_name, :string
       add :winner, :string
-      add :board, {:array, :string}, default: fragment("ARRAY[''::text, ''::text, ''::text, ''::text, ''::text, ''::text, ''::text, ''::text, ''::text]")
+      add :board, {:array, :string}, default: ["-", "-", "-", "-", "-", "-", "-", "-", "-"]
       add :current_player, :string, default: "X"
       add :status, :string, default: "waiting"
       add :winning_line, {:array, :integer}
