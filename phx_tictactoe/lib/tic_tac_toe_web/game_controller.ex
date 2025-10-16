@@ -12,7 +12,7 @@ defmodule TicTacToeWeb.GameController do
     game = %Game{
       player_x_id: player_id,
       player_x_name: player_name,
-      board: List.duplicate("", 9),
+       board: List.duplicate("-", 9),
       status: "waiting"
     }
     |> Repo.insert!()
