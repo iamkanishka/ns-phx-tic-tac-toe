@@ -290,7 +290,7 @@
                                role="gridcell"
                                accessibilityRole="button">
                                
-                        <Label [text]="gameService.cells[position.index]" 
+                        <Label [text]="gameService.cells[position.index]!=='-' ? gameService.cells[position.index] : ''" 
                                class="cell"
                                [ngClass]="getCellClass(gameService.cells[position.index], position.index)"
                                [ariaHidden]="true"></Label>
