@@ -17,6 +17,7 @@
     "@angular/router": "~18.0.0",
     "@nativescript/angular": "^18.0.0",
     "@nativescript/core": "~8.9.0",
+    "@nativescript/google-signin": "^2.1.1",
     "@nativescript/theme": "^3.1.0",
     "@valor/nativescript-feedback": "^2.0.2",
     "@valor/nativescript-websockets": "^2.0.2",
