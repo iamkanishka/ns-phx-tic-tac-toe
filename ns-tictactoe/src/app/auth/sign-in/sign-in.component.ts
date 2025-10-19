@@ -63,7 +63,10 @@ export class SignInComponent implements OnInit {
       } else {
         console.log("No current user found");
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+      
+    }
   }
 
   
