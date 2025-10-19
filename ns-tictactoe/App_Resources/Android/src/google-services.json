@@ -1,44 +1,36 @@
 {
   "project_info": {
-    "project_number": "904848439992",
-    "project_id": "bakery-shop-80613",
-    "storage_bucket": "bakery-shop-80613.firebasestorage.app"
+    "project_number": "936691648213",
+    "firebase_url": "https://rsense6296.firebaseio.com",
+    "project_id": "rsense6296",
+    "storage_bucket": "rsense6296.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:904848439992:android:7a8be96952c6ed1267524d",
+        "mobilesdk_app_id": "1:936691648213:android:1f47032527d737cd0fc45c",
         "android_client_info": {
-          "package_name": "org.nativescript.Baky"
+          "package_name": "com.tictactoe"
         }
       },
       "oauth_client": [
         {
-          "client_id": "904848439992-q3gijafg8o7s4d3o6gthotlm89hlmrd0.apps.googleusercontent.com",
+          "client_id": "936691648213-omk689ugdbogh30pf1bbf1faicbm8na1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "org.nativescript.Baky",
+            "package_name": "com.tictactoe",
             "certificate_hash": "a580696468800f36753ea2c5cd0f274869c2b225"
           }
-        },
-        {
-          "client_id": "904848439992-ibuouvshsvbcds3r6phku4q1b3mckhl0.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDhlujfTNynMPTBKqpNA_7Yf2UL1P2yIDY"
+          "current_key": "AIzaSyD4mXE90EvW66Sdzv03X2vx-zjrFmkO75I"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "904848439992-ibuouvshsvbcds3r6phku4q1b3mckhl0.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
