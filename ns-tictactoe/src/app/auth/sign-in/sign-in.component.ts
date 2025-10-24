@@ -48,7 +48,9 @@ export class SignInComponent implements OnInit {
   async onGoogleSignUp() {
     console.log("Google Sign-Up clicked");
     try {
-      await GoogleSignin.configure({ scopes: ["email"] });
+      await GoogleSignin.configure({
+        scopes: ["email"],
+      });
       const user = await GoogleSignin.signIn();
       console.log("Signing in with:", user);
 
@@ -65,11 +67,8 @@ export class SignInComponent implements OnInit {
       }
     } catch (e) {
       console.log(e);
-      
     }
   }
-
-  
 
   onTerms() {
     console.log("Terms & Conditions clicked");
@@ -78,14 +77,10 @@ export class SignInComponent implements OnInit {
 
   signout() {
     console.log("Signing out");
+        this.router.navigate([""]);
 
     GoogleSignin.signOut();
-  
   }
 
-  ngOnInit(): void {
-    
-  }
-
-
+  ngOnInit(): void {}
 }
