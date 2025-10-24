@@ -13,9 +13,9 @@ import { SignInComponent } from "./auth/sign-in/sign-in.component";
 
 
 @NgModule({
-  bootstrap: [SignInComponent],
+  bootstrap: [AppComponent],
   imports: [NativeScriptModule, AppRoutingModule, NativeScriptFormsModule, HttpClientModule, AuthModule],
-  declarations: [AppComponent, GameComponent, SignInComponent],
+  declarations: [AppComponent, GameComponent],
    providers: [
     Page // ✅ Add this line
   ],
