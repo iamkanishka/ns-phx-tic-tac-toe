@@ -1,46 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="__PACKAGE__">
+    package="com.kanishka.tictactoe">   <!-- ✅ Your actual package name -->
 
-	<supports-screens
-		android:smallScreens="true"
-		android:normalScreens="true"
-		android:largeScreens="true"
-		android:xlargeScreens="true"/>
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:xlargeScreens="true" />
 
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-	<uses-permission android:name="android.permission.INTERNET"/>
-	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-	<uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
-	<application
-		android:name="com.tns.NativeScriptApplication"
-		android:allowBackup="true"
-		android:icon="@mipmap/ic_launcher"
-		android:label="@string/app_name"
-		android:theme="@style/AppTheme"
-		android:hardwareAccelerated="true">
+    <application
+        android:name="com.tns.NativeScriptApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true">
 
-		<activity
-			android:name="com.tns.NativeScriptActivity"
-			android:label="@string/title_activity_kimera"
-			android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|locale|uiMode"
-			android:theme="@style/LaunchScreenTheme"
-			android:hardwareAccelerated="true"
-      		android:launchMode="singleTask"
-			android:exported="true">
+        <activity
+            android:name="com.tns.NativeScriptActivity"
+            android:label="@string/title_activity_kimera"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|locale|uiMode"
+            android:theme="@style/LaunchScreenTheme"
+            android:hardwareAccelerated="true"
+            android:launchMode="singleTask"
+            android:exported="true">
 
-			<meta-data android:name="SET_THEME_ON_LAUNCH" android:resource="@style/AppTheme" />
-				 <meta-data  android:name="com.google.android.gms.auth.api.signin.CLIENT_ID"
-                 android:value="936691648213-omk689ugdbogh30pf1bbf1faicbm8na1.apps.googleusercontent.com" />
+            <meta-data android:name="SET_THEME_ON_LAUNCH" android:resource="@style/AppTheme" />
 
+            <!-- ✅ Use the correct Android client_id from google-services.json -->
+            <meta-data
+                android:name="com.google.android.gms.auth.api.signin.CLIENT_ID"
+                
+                android:value="342826189569-rk5njgnmm6utta7uvm6l3po0a6uao8fv.apps.googleusercontent.com" />
 
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-		</activity>
-		<activity android:name="com.tns.ErrorReportActivity"/>
-	</application>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="com.tns.ErrorReportActivity" />
+    </application>
 </manifest>
