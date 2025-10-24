@@ -1,33 +1,46 @@
-import { NgModule } from '@angular/core'
-import { Routes } from '@angular/router'
-import { NativeScriptRouterModule, NSEmptyOutletComponent } from '@nativescript/angular'
+import { NgModule } from "@angular/core";
+import { Routes } from "@angular/router";
+import {
+  NativeScriptRouterModule,
+  NSEmptyOutletComponent,
+} from "@nativescript/angular";
+
 
 const routes: Routes = [
   {
-    path: '',
-    redirectTo: '/(homeTab:home/default//browseTab:browse/default//searchTab:search/default)',
-    pathMatch: 'full',
+    path: "",
+    redirectTo: "signin",
+    pathMatch: "full",
+  },
+  {
+    path: "signin",
+    loadChildren: () =>
+      import("~/app/auth/auth.module").then((m) => m.AuthModule),
+    outlet: "homeTab",
   },
 
   {
-    path: 'home',
+    path: "home",
     component: NSEmptyOutletComponent,
-    loadChildren: () => import('~/app/home/home.module').then((m) => m.HomeModule),
-    outlet: 'homeTab',
+    loadChildren: () =>
+      import("~/app/home/home.module").then((m) => m.HomeModule),
+    outlet: "homeTab",
   },
   {
-    path: 'browse',
+    path: "browse",
     component: NSEmptyOutletComponent,
-    loadChildren: () => import('~/app/browse/browse.module').then((m) => m.BrowseModule),
-    outlet: 'browseTab',
+    loadChildren: () =>
+      import("~/app/browse/browse.module").then((m) => m.BrowseModule),
+    outlet: "browseTab",
   },
   {
-    path: 'search',
+    path: "search",
     component: NSEmptyOutletComponent,
-    loadChildren: () => import('~/app/search/search.module').then((m) => m.SearchModule),
-    outlet: 'searchTab',
+    loadChildren: () =>
+      import("~/app/search/search.module").then((m) => m.SearchModule),
+    outlet: "searchTab",
   },
-]
+];
 
 @NgModule({
   imports: [NativeScriptRouterModule.forRoot(routes)],
