@@ -1,7 +1,7 @@
 import { NativeScriptConfig } from '@nativescript/core';
 
 export default {
-  id: 'org.nativescript.tictactoe',
+  id: 'com.kanishka.tictactoe',
   appPath: 'src',
   appResourcesPath: 'App_Resources',
   android: {
