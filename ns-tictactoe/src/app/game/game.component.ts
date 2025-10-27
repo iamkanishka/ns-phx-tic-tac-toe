@@ -18,6 +18,10 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { View } from "@nativescript/core";
 import { Dialogs } from "@nativescript/core";
+import { GoogleSignin, User } from "@nativescript/google-signin";
+import { RouterExtensions } from "@nativescript/angular";
+import { AuthService } from "../auth/service/auth/auth.service";
+
 
 interface CellPosition {
   row: number;
@@ -88,13 +92,20 @@ export class GameComponent implements OnInit, OnDestroy {
   public errorMessage: string | null = null;
   public isLoadingGames = false;
 
+  // user info
+  public user: unknown = null;
+  
+  userAvatar: string = "https://lh3.googleusercontent.com/a/ACg8ocJCBs9wsSipS7LGJ096TFAmhzfkwbte029Z7_TXqh8oAlStJglZ=s96-c";
+
   constructor(
     public gameService: GameService,
     public gameSocketService: GameSocketService,
     public gameApiService: GameApiService,
     private animationService: AnimationService,
     private cdRef: ChangeDetectorRef,
-    private clipboardService: ClipboardService
+    private clipboardService: ClipboardService,
+     private router: RouterExtensions,
+     private authService: AuthService
   ) {
     this.settings = this.gameService.settings;
     this.playerId = this.gameSocketService.generatePlayerId();
@@ -170,6 +181,9 @@ export class GameComponent implements OnInit, OnDestroy {
           this.showToast(error, "error");
         }
       });
+
+      this.user = this.authService.getCurrentUser();
+
   }
 
   ngOnDestroy(): void {
@@ -702,4 +716,13 @@ export class GameComponent implements OnInit, OnDestroy {
         return "Tic Tac Toe game board";
     }
   }
+
+   
+  logOut() {
+    console.log("Signing out");
+    GoogleSignin.signOut();
+   this.router.navigate(["signin"]);
+    
+  }
+
 }
