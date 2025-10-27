@@ -4,41 +4,24 @@ import {
   NativeScriptRouterModule,
   NSEmptyOutletComponent,
 } from "@nativescript/angular";
-
+import { GameComponent } from "./game/game.component";
+import { GoogleAuthGuard } from "./guards/googe-auth.guard";
 
 const routes: Routes = [
   {
     path: "",
-    redirectTo: "signin",
+    redirectTo: "game",
     pathMatch: "full",
+  },
+  {
+    path: "game",
+    component: GameComponent,
+    canActivate: [GoogleAuthGuard],
   },
   {
     path: "signin",
     loadChildren: () =>
       import("~/app/auth/auth.module").then((m) => m.AuthModule),
-    outlet: "homeTab",
-  },
-
-  {
-    path: "home",
-    component: NSEmptyOutletComponent,
-    loadChildren: () =>
-      import("~/app/home/home.module").then((m) => m.HomeModule),
-    outlet: "homeTab",
-  },
-  {
-    path: "browse",
-    component: NSEmptyOutletComponent,
-    loadChildren: () =>
-      import("~/app/browse/browse.module").then((m) => m.BrowseModule),
-    outlet: "browseTab",
-  },
-  {
-    path: "search",
-    component: NSEmptyOutletComponent,
-    loadChildren: () =>
-      import("~/app/search/search.module").then((m) => m.SearchModule),
-    outlet: "searchTab",
   },
 ];
 
