@@ -26,24 +26,14 @@ export class SignInComponent implements OnInit {
     this._page.actionBarHidden = true;
   }
 
-  togglePasswordVisibility() {
-    this.passwordHidden = !this.passwordHidden;
-  }
-
-  onSignUp() {
-    console.log("Signing up with:", this.name, this.email, this.password);
-    // Handle sign-up logic
-  }
+  
 
   onSignIn() {
     console.log("routing");
-
-    this.router.navigate(["/tabs/home/default"]);
+    this.router.navigate(["/game"], { clearHistory: true });
   }
 
-  onAppleSignUp() {
-    console.log("Apple Sign-Up clicked");
-  }
+ 
 
   async onGoogleSignUp() {
     console.log("Google Sign-Up clicked");
@@ -58,9 +48,10 @@ export class SignInComponent implements OnInit {
       console.log("currentIUser", currentUser);
       if (currentUser) {
         this.authService
-          .getGoogleSignInUserDetailsAPI(currentUser["_accessToken"])
+          .getGoogleSignInUserDetailsAPI()
           .subscribe((res) => {
             console.log("Google User Details", res);
+            this.onSignIn();
           });
       } else {
         console.log("No current user found");
@@ -70,17 +61,6 @@ export class SignInComponent implements OnInit {
     }
   }
 
-  onTerms() {
-    console.log("Terms & Conditions clicked");
-    // Navigate to terms page
-  }
-
-  signout() {
-    console.log("Signing out");
-        this.router.navigate([""]);
-
-    GoogleSignin.signOut();
-  }
 
   ngOnInit(): void {}
 }
