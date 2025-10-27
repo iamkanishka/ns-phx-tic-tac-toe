@@ -1,470 +1,751 @@
 <!-- game.component.html - COMPLETE MULTIPLAYER VERSION -->
-<Page class="page">
-    <ActionBar [title]="currentMode === GameMode.Offline ? 'TTT' : 'Online Multiplayer'"  color="white">
-        <ActionItem *ngIf="!showLobby" (tap)="toggleStats()" ios.position="left" android.position="actionBar">
-            <Label text="📊" class="action-icon" accessibilityLabel="View statistics"></Label>
-        </ActionItem>
-        <ActionItem *ngIf="!showLobby" (tap)="toggleSettings()" ios.position="right" android.position="actionBar">
-            <Label text="⚙️" class="action-icon" accessibilityLabel="Game settings"></Label>
-        </ActionItem>
-    </ActionBar>
-    
-    <ScrollView>
-        <StackLayout class="game-container">
-            
-            <!-- ============================================
+
+<ActionBar title="" c backgroundColor="black">
+  <!-- 🧑‍💼 User Avatar (Left) -->
+  <ActionItem ios.position="left" android.position="actionBar">
+    <StackLayout orientation="horizontal" verticalAlignment="center">
+      <Image
+        src="{{ userAvatar || '~/images/default-avatar.png' }}"
+        width="32"
+        height="32"
+        stretch="aspectFill"
+        borderRadius="16"
+        marginLeft="12"
+        accessibilityLabel="User Avatar"
+      />
+    </StackLayout>
+  </ActionItem>
+
+  <!-- 🚪 Logout -->
+  <ActionItem
+    *ngIf="!showLobby"
+    (tap)="logOut()"
+    ios.position="left"
+    android.position="actionBar"
+  >
+    <Label text="Logout" color="white"></Label>
+  </ActionItem>
+
+  <!-- 📊 Stats -->
+  <ActionItem
+    *ngIf="!showLobby"
+    (tap)="toggleStats()"
+    ios.position="right"
+    android.position="actionBar"
+  >
+    <Label text="📊" class="action-icon" marginRight="8"></Label>
+  </ActionItem>
+
+  <!-- ⚙️ Settings -->
+  <ActionItem
+    *ngIf="!showLobby"
+    (tap)="toggleSettings()"
+    ios.position="right"
+    android.position="actionBar"
+  >
+    <Label text="⚙️" class="action-icon" marginRight="8"></Label>
+  </ActionItem>
+</ActionBar>
+
+<ScrollView>
+  <StackLayout class="game-container" backgroundColor="black">
+    <!-- ============================================
                  MODE SELECTION SCREEN
                  ============================================ -->
-            <StackLayout *ngIf="currentMode === GameMode.Offline && !showLobby" class="mode-selector">
-                <Label text="TIC TAC TOE" color="white" class="game-title"></Label>
-             
-                <Label text="Choose Game Mode" class="mode-subtitle"></Label>
-                
-                <Button text="🎮 Play Offline" 
-                        (tap)="switchToOfflineMode()" 
-                        class="btn btn-mode btn-offline"
-                        accessibilityLabel="Play offline against local player"></Button>
-                
-                <Button text="🌐 🌐 Play Online" 
-                        (tap)="switchToOnlineMode()" 
-                        class="btn btn-mode btn-online"
-                        accessibilityLabel="Play online with friends"></Button>
-                          
-            </StackLayout>
-       
+    <StackLayout
+      *ngIf="currentMode === GameMode.Offline && !showLobby"
+      class="mode-selector"
+    >
+      <Label text="TIC TAC TOE" color="white" class="game-title"></Label>
 
-            <!-- ============================================
+      <Label text="Choose Game Mode" class="mode-subtitle"></Label>
+
+       <!--
+      <button
+        text="🎮 Play Offline"
+        (tap)="switchToOfflineMode()"
+        backgroundColor="white"
+        color="black"
+        borderRadius="24"
+        width="220"
+        height="48"
+        marginBottom="16"
+        elevation="4"
+        horizontalAlignment="center"
+        accessibilityLabel="Play offline against local player"
+      ></button>
+       -->
+
+      <button
+        text="🌐 Play Online"
+        (tap)="switchToOnlineMode()"
+        backgroundColor="white"
+        color="black"
+        borderRadius="24"
+        width="220"
+        height="48"
+        elevation="4"
+        horizontalAlignment="center"
+        accessibilityLabel="Play online with friends"
+      ></button>
+    </StackLayout>
+
+    <!-- ============================================
                  ONLINE LOBBY
                  ============================================ -->
-            <StackLayout *ngIf="showLobby" class="lobby">
-                <Label text="🌐 Online Multiplayer" class="lobby-title"></Label>
-                
-                <Button text="← Back to Menu" 
-                        (tap)="switchToOfflineMode()" 
-                        class="btn btn-back"
-                        accessibilityLabel="Back to main menu"></Button>
+    <StackLayout *ngIf="showLobby" class="lobby">
+      <Label text="🌐 Online Multiplayer" class="lobby-title"></Label>
 
-                <!-- Create Game Form -->
-                <StackLayout *ngIf="showCreateGame" class="create-game-panel">
-                    <Label text="Create New Game" class="panel-subtitle"></Label>
-                    
-                    <TextField [(ngModel)]="playerName" 
-                              hint="Enter your name" 
-                              class="input-field"
-                              [keyboardType]="'text'"
-                              returnKeyType="done"
-                              autocorrect="false"
-                              accessibilityLabel="Player name input"></TextField>
-                    
-                    <FlexboxLayout class="button-group">
-                        <Button text="Create Game" 
-                                (tap)="createOnlineGame()" 
-                                class="btn btn-primary"
-                                accessibilityLabel="Create game"></Button>
-                        <Button text="Cancel" 
-                                (tap)="cancelCreateGame()" 
-                                class="btn btn-secondary"
-                                accessibilityLabel="Cancel"></Button>
-                    </FlexboxLayout>
-                </StackLayout>
+      <Button
+        text="← Back to Menu"
+        (tap)="switchToOfflineMode()"
+        class="btn btn-back"
+        accessibilityLabel="Back to main menu"
+      ></Button>
 
-                <!-- Join Game Form -->
-                <StackLayout *ngIf="showJoinGame" class="join-game-panel">
-                    <Label text="Join Game" class="panel-subtitle"></Label>
-                    
-                    <TextField [(ngModel)]="playerName" 
-                              hint="Enter your name" 
-                              class="input-field"
-                             [keyboardType]="'text'"
-                              returnKeyType="next"
-                              autocorrect="false"
-                              accessibilityLabel="Player name input"></TextField>
-                    
-                    <TextField [(ngModel)]="gameIdToJoin" 
-                              hint="Paste Game ID" 
-                              class="input-field"
-                             [keyboardType]="'text'"
-                              returnKeyType="done"
-                              autocorrect="false"
-                              accessibilityLabel="Game ID input"></TextField>
-                    
-                    <FlexboxLayout class="button-group">
-                        <Button text="Join Game" 
-                                (tap)="joinGameById()" 
-                                class="btn btn-primary"
-                                accessibilityLabel="Join game"></Button>
-                        <Button text="Cancel" 
-                                (tap)="cancelJoinGame()" 
-                                class="btn btn-secondary"
-                                accessibilityLabel="Cancel"></Button>
-                    </FlexboxLayout>
-                </StackLayout>
+      <!-- Create Game Form -->
+      <StackLayout *ngIf="showCreateGame" class="create-game-panel">
+        <Label text="Create New Game" class="panel-subtitle"></Label>
 
-                <!-- Lobby Actions -->
-                <StackLayout *ngIf="!showCreateGame && !showJoinGame" class="lobby-actions">
-                    <Button text="+ Create New Game" 
-                            (tap)="showCreateGameForm()" 
-                            class="btn btn-primary btn-large"
-                            accessibilityLabel="Create new game"></Button>
-                    
-                    <Button text="📋 Join by Game ID" 
-                            (tap)="showJoinGameForm()" 
-                            class="btn btn-secondary btn-large"
-                            accessibilityLabel="Join game by ID"></Button>
-                    
-                    <Label text="OR" class="divider-text"></Label>
-                    
-                    <Button text="🔄 Refresh Games" 
-                            (tap)="loadWaitingGames()" 
-                            class="btn btn-refresh"
-                            [isEnabled]="!isLoadingGames"
-                            accessibilityLabel="Refresh available games"></Button>
-                </StackLayout>
+        <TextField
+          [(ngModel)]="playerName"
+          hint="Enter your name"
+          class="input-field"
+          [keyboardType]="'text'"
+          returnKeyType="done"
+          autocorrect="false"
+          accessibilityLabel="Player name input"
+        ></TextField>
 
-                <!-- Waiting Games List -->
-                <StackLayout *ngIf="!showCreateGame && !showJoinGame" class="waiting-games">
-                    <Label text="Available Games" class="section-title"></Label>
-                    
-                    <ActivityIndicator *ngIf="isLoadingGames" 
-                                      [busy]="true" 
-                                      class="loading-indicator"
-                                      accessibilityLabel="Loading games"></ActivityIndicator>
-                    
-                    <StackLayout *ngIf="!isLoadingGames && waitingGames.length > 0" class="games-list">
-                        <GridLayout *ngFor="let game of waitingGames" 
-                                   columns="*, auto" 
-                                   class="game-item"
-                                   (tap)="joinOnlineGame(game.id)"
-                                   accessibilityRole="button"
-                                   [accessibilityLabel]="'Join game created by ' + game.player_x_name">
-                            <StackLayout col="0">
-                                <Label [text]="game.player_x_name" class="game-player-name"></Label>
-                                <Label text="Waiting for opponent..." class="game-status"></Label>
-                            </StackLayout>
-                            <Button col="1" 
-                                   text="Join" 
-                                   class="btn btn-join"
-                                   accessibilityLabel="Join this game"></Button>
-                        </GridLayout>
-                    </StackLayout>
-                    
-                    <StackLayout *ngIf="!isLoadingGames && waitingGames.length === 0" class="no-games">
-                        <Label text="🎮" class="no-games-icon"></Label>
-                        <Label text="No games available" class="no-games-text"></Label>
-                        <Label text="Create a new game to get started!" class="no-games-subtext"></Label>
-                    </StackLayout>
-                </StackLayout>
+        <FlexboxLayout class="button-group">
+          <Button
+            text="Create Game"
+            (tap)="createOnlineGame()"
+            class="btn btn-primary"
+            accessibilityLabel="Create game"
+          ></Button>
+          <Button
+            text="Cancel"
+            (tap)="cancelCreateGame()"
+            class="btn btn-secondary"
+            accessibilityLabel="Cancel"
+          ></Button>
+        </FlexboxLayout>
+      </StackLayout>
+
+      <!-- Join Game Form -->
+      <StackLayout *ngIf="showJoinGame" class="join-game-panel">
+        <Label text="Join Game" class="panel-subtitle"></Label>
+
+        <TextField
+          [(ngModel)]="playerName"
+          hint="Enter your name"
+          class="input-field"
+          [keyboardType]="'text'"
+          returnKeyType="next"
+          autocorrect="false"
+          accessibilityLabel="Player name input"
+        ></TextField>
+
+        <TextField
+          [(ngModel)]="gameIdToJoin"
+          hint="Paste Game ID"
+          class="input-field"
+          [keyboardType]="'text'"
+          returnKeyType="done"
+          autocorrect="false"
+          accessibilityLabel="Game ID input"
+        ></TextField>
+
+        <FlexboxLayout class="button-group">
+          <Button
+            text="Join Game"
+            (tap)="joinGameById()"
+            class="btn btn-primary"
+            accessibilityLabel="Join game"
+          ></Button>
+          <Button
+            text="Cancel"
+            (tap)="cancelJoinGame()"
+            class="btn btn-secondary"
+            accessibilityLabel="Cancel"
+          ></Button>
+        </FlexboxLayout>
+      </StackLayout>
+
+      <!-- Lobby Actions -->
+      <StackLayout
+        *ngIf="!showCreateGame && !showJoinGame"
+        class="lobby-actions"
+      >
+        <Button
+          text="+ Create New Game"
+          (tap)="showCreateGameForm()"
+          class="btn btn-primary btn-large"
+          accessibilityLabel="Create new game"
+        ></Button>
+
+        <Button
+          text="📋 Join by Game ID"
+          (tap)="showJoinGameForm()"
+          class="btn btn-secondary btn-large"
+          accessibilityLabel="Join game by ID"
+        ></Button>
+
+        <Label text="OR" class="divider-text"></Label>
+
+        <Button
+          text="🔄 Refresh Games"
+          (tap)="loadWaitingGames()"
+          class="btn btn-refresh"
+          [isEnabled]="!isLoadingGames"
+          accessibilityLabel="Refresh available games"
+        ></Button>
+      </StackLayout>
+
+      <!-- Waiting Games List -->
+      <StackLayout
+        *ngIf="!showCreateGame && !showJoinGame"
+        class="waiting-games"
+      >
+        <Label text="Available Games" class="section-title"></Label>
+
+        <ActivityIndicator
+          *ngIf="isLoadingGames"
+          [busy]="true"
+          class="loading-indicator"
+          accessibilityLabel="Loading games"
+        ></ActivityIndicator>
+
+        <StackLayout
+          *ngIf="!isLoadingGames && waitingGames.length > 0"
+          class="games-list"
+        >
+          <GridLayout
+            *ngFor="let game of waitingGames"
+            columns="*, auto"
+            class="game-item"
+            (tap)="joinOnlineGame(game.id)"
+            accessibilityRole="button"
+            [accessibilityLabel]="'Join game created by ' + game.player_x_name"
+          >
+            <StackLayout col="0">
+              <Label
+                [text]="game.player_x_name"
+                class="game-player-name"
+              ></Label>
+              <Label text="Waiting for opponent..." class="game-status"></Label>
             </StackLayout>
+            <Button
+              col="1"
+              text="Join"
+              class="btn btn-join"
+              accessibilityLabel="Join this game"
+            ></Button>
+          </GridLayout>
+        </StackLayout>
 
-            <!-- ============================================
+        <StackLayout
+          *ngIf="!isLoadingGames && waitingGames.length === 0"
+          class="no-games"
+        >
+          <Label text="🎮" class="no-games-icon"></Label>
+          <Label text="No games available" class="no-games-text"></Label>
+          <Label
+            text="Create a new game to get started!"
+            class="no-games-subtext"
+          ></Label>
+        </StackLayout>
+      </StackLayout>
+    </StackLayout>
+
+    <!-- ============================================
                  GAME BOARD (OFFLINE & ONLINE)
                  ============================================ -->
-            <StackLayout *ngIf="!showLobby" class="game-board-container">
-                
-                <!-- Mode Indicator -->
-                <GridLayout columns="auto, *, auto" class="mode-indicator">
-                    <Label col="0" 
-                           [text]="currentMode === GameMode.Online ? '🌐 Online' : '🎮 Offline'" 
-                           class="mode-badge"
-                           [accessibilityLabel]="'Game mode: ' + (currentMode === GameMode.Online ? 'Online' : 'Offline')"></Label>
-                    
-                    <Label col="2" 
-                           *ngIf="currentMode === GameMode.Online"
-                           [text]="getConnectionStatusText()"
-                           [class]="'connection-status ' + getConnectionStatusClass()"
-                           [accessibilityLabel]="'Connection status: ' + getConnectionStatusText()"></Label>
-                </GridLayout>
+    <StackLayout *ngIf="!showLobby" class="game-board-container">
+      <!-- Mode Indicator -->
+      <GridLayout columns="auto, *, auto" class="mode-indicator">
+        <Label
+          col="0"
+          [text]="currentMode === GameMode.Online ? '🌐 Online' : '🎮 Offline'"
+          class="mode-badge"
+          [accessibilityLabel]="
+            'Game mode: ' +
+            (currentMode === GameMode.Online ? 'Online' : 'Offline')
+          "
+        ></Label>
 
-                <!-- Game ID Display (for created games) -->
-                <StackLayout *ngIf="currentMode === GameMode.Online && currentGameId && !opponentConnected" 
-                            class="game-id-display">
-                    <Label text="Share this Game ID with your friend:" class="game-id-label"></Label>
-                    
-                    <GridLayout columns="*, auto, auto" class="game-id-container">
-                        <Label col="0" 
-                               [text]="currentGameId" 
-                               class="game-id-text"
-                               textWrap="false"
-                               [accessibilityLabel]="'Game ID: ' + currentGameId"></Label>
-                        <Button col="1" 
-                                text="📋" 
-                                (tap)="copyGameId()" 
-                                class="btn btn-icon"
-                                accessibilityLabel="Copy game ID to clipboard"></Button>
-                        <Button col="2" 
-                                text="📤" 
-                                (tap)="shareGameId()" 
-                                class="btn btn-icon"
-                                accessibilityLabel="Share game ID"></Button>
-                    </GridLayout>
-                    
-                    <Label text="Waiting for opponent to join..." class="waiting-text"></Label>
-                </StackLayout>
+        <Label
+          col="2"
+          *ngIf="currentMode === GameMode.Online"
+          [text]="getConnectionStatusText()"
+          [class]="'connection-status ' + getConnectionStatusClass()"
+          [accessibilityLabel]="
+            'Connection status: ' + getConnectionStatusText()
+          "
+        ></Label>
+      </GridLayout>
 
-                <!-- Header -->
-                <StackLayout class="header">
-                    <Label [text]="getStatusMessage()" 
-                           class="status-message" 
-                           [class.playing]="gameService.gameState === GameState.Playing"
-                           [class.won]="gameService.gameState === GameState.Won"
-                           [class.draw]="gameService.gameState === GameState.Draw"
-                           [accessibilityLabel]="getStatusMessage()" color="white"></Label>
-                           
-                    <Label [text]="getStatusSubtitle()" 
-                           class="status-subtitle"
-                           [accessibilityLabel]="getStatusSubtitle()"></Label>
-                </StackLayout>
+      <!-- Game ID Display (for created games) -->
+      <StackLayout
+        *ngIf="
+          currentMode === GameMode.Online && currentGameId && !opponentConnected
+        "
+        class="game-id-display"
+      >
+        <Label
+          text="Share this Game ID with your friend:"
+          class="game-id-label"
+        ></Label>
 
-                <!-- Score Board (Offline only) -->
-                <GridLayout *ngIf="currentMode === GameMode.Offline" 
-                           columns="*, *, *" 
-                           class="score-board"
-                           accessibilityRole="summary"
-                           accessibilityLabel="Score board">
-                    <StackLayout col="0" class="score-item">
-                        <Label text="X" class="score-label player-x"></Label>
-                        <Label [text]="gameService.scores.X"  color="white" class="score-value score-value-color"></Label>
-                        <Label *ngIf="xWinRate > 0" [text]="xWinRate + '%'" class="win-rate"></Label>
-                    </StackLayout>
-                    <StackLayout col="1" class="score-item">
-                        <Label text="Draws" color="orange" class="score-label draw"></Label>
-                        <Label [text]="gameService.scores.draws" color="white"  class="score-value score-value-color"></Label>
-                        <Label *ngIf="drawRate > 0" [text]="drawRate + '%'" class="win-rate"></Label>
-                    </StackLayout>
-                    <StackLayout col="2" class="score-item">
-                        <Label text="O" class="score-label player-o"></Label>
-                        <Label [text]="gameService.scores.O" color="white" class="score-value"></Label>
-                        <Label *ngIf="oWinRate > 0" [text]="oWinRate + '%'" class="win-rate"></Label>
-                    </StackLayout>
-                </GridLayout>
+        <GridLayout columns="*, auto, auto" class="game-id-container">
+          <Label
+            col="0"
+            [text]="currentGameId"
+            class="game-id-text"
+            textWrap="false"
+            [accessibilityLabel]="'Game ID: ' + currentGameId"
+          ></Label>
+          <Button
+            col="1"
+            text="📋"
+            (tap)="copyGameId()"
+            class="btn btn-icon"
+            accessibilityLabel="Copy game ID to clipboard"
+          ></Button>
+          <Button
+            col="2"
+            text="📤"
+            (tap)="shareGameId()"
+            class="btn btn-icon"
+            accessibilityLabel="Share game ID"
+          ></Button>
+        </GridLayout>
 
-                <!-- Player Info (Online only) -->
-                <GridLayout *ngIf="currentMode === GameMode.Online && opponentConnected" 
-                           columns="*, *" 
-                           class="players-info"
-                           accessibilityRole="summary"
-                           accessibilityLabel="Players information">
-                    <StackLayout col="0" 
-                                class="player-card" 
-                                [class.active]="mySymbol === 'X'"
-                                [accessibilityLabel]="'You are playing as ' + mySymbol">
-                        <Label text="YOU" class="player-label"></Label>
-                        <Label [text]="mySymbol" class="player-symbol player-x"></Label>
-                    </StackLayout>
-                    <StackLayout col="1" 
-                                class="player-card" 
-                                [class.active]="mySymbol === 'O'"
-                                [accessibilityLabel]="'Opponent is playing as ' + (mySymbol === 'X' ? 'O' : 'X')">
-                        <Label text="OPPONENT" class="player-label"></Label>
-                        <Label [text]="mySymbol === 'X' ? 'O' : 'X'" class="player-symbol player-o"></Label>
-                    </StackLayout>
-                </GridLayout>
+        <Label
+          text="Waiting for opponent to join..."
+          class="waiting-text"
+        ></Label>
+      </StackLayout>
 
-                <!-- Hint Button (Offline only) -->
-                <Button *ngIf="currentMode === GameMode.Offline && settings.showHints && gameService.gameState === GameState.Playing"
-                        text="💡 Show Hint" 
-                        (tap)="showHintMove()" 
-                        class="btn btn-hint"
-                        [isEnabled]="!isAnimating && !showHint"
-                        accessibilityLabel="Show hint for best move"></Button>
+      <!-- Header -->
+      <StackLayout class="header">
+        <Label
+          [text]="getStatusMessage()"
+          class="status-message"
+          [class.playing]="gameService.gameState === GameState.Playing"
+          [class.won]="gameService.gameState === GameState.Won"
+          [class.draw]="gameService.gameState === GameState.Draw"
+          [accessibilityLabel]="getStatusMessage()"
+          color="white"
+        ></Label>
 
-                <!-- Hint Message -->
-                <Label *ngIf="showHint && suggestedMove !== null"
-                       text="👆 Tap the highlighted cell for the best move!"
-                       class="hint-message"
-                       accessibilityLabel="Hint is showing the best move"></Label>
+        <Label
+          [text]="getStatusSubtitle()"
+          class="status-subtitle"
+          [accessibilityLabel]="getStatusSubtitle()"
+        ></Label>
+      </StackLayout>
 
-                <!-- Game Board -->
-                <GridLayout rows="*, *, *" columns="*, *, *" 
-                           class="game-board" 
-                           [ariaLabel]="getBoardAriaLabel()" 
-                           role="grid">
-                    
-                    <!-- All 9 cells -->
-                    <StackLayout *ngFor="let position of cellPositions" 
-                               [row]="position.row" 
-                               [col]="position.col"
-                               (tap)="makeMove(position.index)"
-                               class="cell-container"
-                               [ariaLabel]="getCellAriaLabel(position.index)"
-                               role="gridcell"
-                               accessibilityRole="button">
-                               
-                        <Label [text]="gameService.cells[position.index]!=='-' ? gameService.cells[position.index] : ''" 
-                               class="cell"
-                               [ngClass]="getCellClass(gameService.cells[position.index], position.index)"
-                               [ariaHidden]="true"></Label>
-                               
-                        <GridLayout *ngIf="!gameService.cells[position.index] && gameService.gameState === GameState.Playing" 
-                                   class="cell-hover-effect">
-                            <Label [text]="gameService.currentPlayer" class="cell-ghost"></Label>
-                        </GridLayout>
-                        
-                        <Label *ngIf="suggestedMove === position.index && showHint"
-                               text="✨" 
-                               class="hint-indicator"
-                               accessibilityLabel="Suggested move"></Label>
-                    </StackLayout>
-                    
-                </GridLayout>
-
-                <!-- Action Buttons -->
-                <FlexboxLayout class="action-buttons">
-                    <Button [text]="currentMode === GameMode.Online ? '🚪 Leave Game' : '🔄 New Game'" 
-                            (tap)="resetGame()" 
-                            class="btn btn-primary"
-                            [isEnabled]="!isAnimating"
-                            [accessibilityLabel]="currentMode === GameMode.Online ? 'Leave current game' : 'Start new game'"></Button>
-                    
-                    <Button *ngIf="currentMode === GameMode.Offline"
-                            text="📊 Reset Scores" 
-                            (tap)="resetScores()" 
-                            class="btn btn-secondary"
-                            accessibilityLabel="Reset all scores"></Button>
-                </FlexboxLayout>
-
-                <!-- Statistics Panel -->
-                <StackLayout *ngIf="showStats" class="stats-panel">
-                    <Label text="📊 Game Statistics" class="panel-title"></Label>
-                    
-                    <GridLayout rows="auto, auto" columns="*, *" class="stats-grid">
-                        <StackLayout row="0" col="0" class="stat-item">
-                            <Label text="Games Played" class="stat-label"></Label>
-                            <Label [text]="gamesPlayed" class="stat-value"></Label>
-                        </StackLayout>
-                        
-                        <StackLayout row="0" col="1" class="stat-item">
-                            <Label text="Current Streak" class="stat-label"></Label>
-                            <Label [text]="currentStreak" class="stat-value streak"></Label>
-                        </StackLayout>
-                        
-                        <StackLayout row="1" col="0" class="stat-item">
-                            <Label text="Longest Streak" class="stat-label"></Label>
-                            <Label [text]="longestStreak" class="stat-value"></Label>
-                        </StackLayout>
-                        
-                        <StackLayout row="1" col="1" class="stat-item">
-                            <Label text="X Win Rate" class="stat-label"></Label>
-                            <Label [text]="xWinRate + '%'" class="stat-value"></Label>
-                        </StackLayout>
-                    </GridLayout>
-                    
-                    <!-- Win Rate Progress Bars -->
-                    <StackLayout class="progress-section">
-                        <Label text="Win Distribution" class="progress-title"></Label>
-                        
-                        <StackLayout class="progress-item">
-                            <GridLayout columns="60, *" class="progress-header">
-                                <Label col="0" text="X" class="progress-label player-x"></Label>
-                                <Label col="1" [text]="xWinRate + '%'" class="progress-value"></Label>
-                            </GridLayout>
-                            <StackLayout class="progress-bar">
-                                <StackLayout class="progress-fill player-x-fill" [width]="xWinRate + '%'"></StackLayout>
-                            </StackLayout>
-                        </StackLayout>
-                        
-                        <StackLayout class="progress-item">
-                            <GridLayout columns="60, *" class="progress-header">
-                                <Label col="0" text="Draws" class="progress-label draw"></Label>
-                                <Label col="1" [text]="drawRate + '%'" class="progress-value"></Label>
-                            </GridLayout>
-                            <StackLayout class="progress-bar">
-                                <StackLayout class="progress-fill draw-fill" [width]="drawRate + '%'"></StackLayout>
-                            </StackLayout>
-                        </StackLayout>
-                        
-                        <StackLayout class="progress-item">
-                            <GridLayout columns="60, *" class="progress-header">
-                                <Label col="0" text="O" class="progress-label player-o"></Label>
-                                <Label col="1" [text]="oWinRate + '%'" class="progress-value"></Label>
-                            </GridLayout>
-                            <StackLayout class="progress-bar">
-                                <StackLayout class="progress-fill player-o-fill" [width]="oWinRate + '%'"></StackLayout>
-                            </StackLayout>
-                        </StackLayout>
-                    </StackLayout>
-                </StackLayout>
-
-                <!-- Settings Panel -->
-                <StackLayout *ngIf="showSettings" class="settings-panel">
-                    <Label text="⚙️ Game Settings" class="panel-title"></Label>
-                    
-                    <StackLayout class="setting-item">
-                        <Label text="Animation Speed" class="setting-label"></Label>
-                        <SegmentedBar 
-                            [selectedIndex]="settings.animationSpeed === 'fast' ? 0 : settings.animationSpeed === 'normal' ? 1 : 2" 
-                            (selectedIndexChange)="onAnimationSpeedChange($event)"
-                            class="setting-control"
-                            accessibilityLabel="Animation speed selector">
-                            <SegmentedBarItem title="Fast"></SegmentedBarItem>
-                            <SegmentedBarItem title="Normal"></SegmentedBarItem>
-                            <SegmentedBarItem title="Slow"></SegmentedBarItem>
-                        </SegmentedBar>
-                    </StackLayout>
-
-                    <GridLayout columns="*, auto" class="setting-item">
-                        <Label col="0" text="🔊 Sound Effects" class="setting-label"></Label>
-                        <Switch col="1" 
-                                [checked]="settings.soundEnabled" 
-                                (checkedChange)="onSoundToggle($event)"
-                                class="setting-control"
-                                accessibilityLabel="Toggle sound effects"></Switch>
-                    </GridLayout>
-                    
-                    <StackLayout *ngIf="settings.soundEnabled" class="setting-item indented">
-                        <Label text="Volume" class="setting-label small"></Label>
-                        <Slider 
-                            [value]="settings.soundVolume * 100" 
-                            minValue="0" 
-                            maxValue="100"
-                            (valueChange)="onVolumeChange($event)"
-                            class="volume-slider"
-                            accessibilityLabel="Volume control"></Slider>
-                    </StackLayout>
-
-                    <GridLayout columns="*, auto" class="setting-item">
-                        <Label col="0" text="📳 Haptic Feedback" class="setting-label"></Label>
-                        <Switch col="1" 
-                                [checked]="settings.vibrationEnabled" 
-                                (checkedChange)="onHapticToggle($event)"
-                                class="setting-control"
-                                accessibilityLabel="Toggle haptic feedback"></Switch>
-                    </GridLayout>
-
-                    <GridLayout *ngIf="currentMode === GameMode.Offline" columns="*, auto" class="setting-item">
-                        <Label col="0" text="💡 Show Hints" class="setting-label"></Label>
-                        <Switch col="1" 
-                                [checked]="settings.showHints" 
-                                (checkedChange)="onHintsToggle($event)"
-                                class="setting-control"
-                                accessibilityLabel="Toggle hints"></Switch>
-                    </GridLayout>
-                    
-                    <Label *ngIf="currentMode === GameMode.Offline && settings.showHints" 
-                           text="Hints will suggest the best move during gameplay" 
-                           class="setting-description"></Label>
-                </StackLayout>
-
-                <!-- Game Instructions -->
-                <StackLayout class="instructions" 
-                            *ngIf="gameService.gameState === GameState.Playing && !showSettings && !showStats">
-                    <Label text="How to Play" class="instructions-title"></Label>
-                    <Label text="• Tap any empty cell to place your mark" class="instruction"></Label>
-                    <Label text="• Get three in a row to win (horizontal, vertical, or diagonal)" class="instruction"></Label>
-                    <Label *ngIf="currentMode === GameMode.Online" 
-                           text="• Wait for your turn in online mode" class="instruction"></Label>
-                    <Label *ngIf="currentMode === GameMode.Offline" 
-                           text="• Player X always starts first" class="instruction"></Label>
-                    <Label *ngIf="currentMode === GameMode.Offline && settings.showHints" 
-                           text="• Use the hint button for strategy suggestions" class="instruction"></Label>
-                </StackLayout>
-                
-                <!-- Achievement Notification -->
-                <StackLayout *ngIf="currentStreak >= 3 && currentMode === GameMode.Offline" class="achievement-banner">
-                    <Label text="🔥 ON FIRE! 🔥" class="achievement-title"></Label>
-                    <Label [text]="currentStreak + ' wins in a row!'" class="achievement-text"></Label>
-                </StackLayout>
-            </StackLayout>
+      <!-- Score Board (Offline only) -->
+      <GridLayout
+        *ngIf="currentMode === GameMode.Offline"
+        columns="*, *, *"
+        class="score-board"
+        accessibilityRole="summary"
+        accessibilityLabel="Score board"
+      >
+        <StackLayout col="0" class="score-item">
+          <Label text="X" class="score-label player-x"></Label>
+          <Label
+            [text]="gameService.scores.X"
+            color="white"
+            class="score-value score-value-color"
+          ></Label>
+          <Label
+            *ngIf="xWinRate > 0"
+            [text]="xWinRate + '%'"
+            class="win-rate"
+          ></Label>
         </StackLayout>
-    </ScrollView>
-</Page>
+        <StackLayout col="1" class="score-item">
+          <Label text="Draws" color="orange" class="score-label draw"></Label>
+          <Label
+            [text]="gameService.scores.draws"
+            color="white"
+            class="score-value score-value-color"
+          ></Label>
+          <Label
+            *ngIf="drawRate > 0"
+            [text]="drawRate + '%'"
+            class="win-rate"
+          ></Label>
+        </StackLayout>
+        <StackLayout col="2" class="score-item">
+          <Label text="O" class="score-label player-o"></Label>
+          <Label
+            [text]="gameService.scores.O"
+            color="white"
+            class="score-value"
+          ></Label>
+          <Label
+            *ngIf="oWinRate > 0"
+            [text]="oWinRate + '%'"
+            class="win-rate"
+          ></Label>
+        </StackLayout>
+      </GridLayout>
+
+      <!-- Player Info (Online only) -->
+      <GridLayout
+        *ngIf="currentMode === GameMode.Online && opponentConnected"
+        columns="*, *"
+        class="players-info"
+        accessibilityRole="summary"
+        accessibilityLabel="Players information"
+      >
+        <StackLayout
+          col="0"
+          class="player-card"
+          [class.active]="mySymbol === 'X'"
+          [accessibilityLabel]="'You are playing as ' + mySymbol"
+        >
+          <Label text="YOU" class="player-label"></Label>
+          <Label [text]="mySymbol" class="player-symbol player-x"></Label>
+        </StackLayout>
+        <StackLayout
+          col="1"
+          class="player-card"
+          [class.active]="mySymbol === 'O'"
+          [accessibilityLabel]="
+            'Opponent is playing as ' + (mySymbol === 'X' ? 'O' : 'X')
+          "
+        >
+          <Label text="OPPONENT" class="player-label"></Label>
+          <Label
+            [text]="mySymbol === 'X' ? 'O' : 'X'"
+            class="player-symbol player-o"
+          ></Label>
+        </StackLayout>
+      </GridLayout>
+
+      <!-- Hint Button (Offline only) -->
+      <Button
+        *ngIf="
+          currentMode === GameMode.Offline &&
+          settings.showHints &&
+          gameService.gameState === GameState.Playing
+        "
+        text="💡 Show Hint"
+        (tap)="showHintMove()"
+        class="btn btn-hint"
+        [isEnabled]="!isAnimating && !showHint"
+        accessibilityLabel="Show hint for best move"
+      ></Button>
+
+      <!-- Hint Message -->
+      <Label
+        *ngIf="showHint && suggestedMove !== null"
+        text="👆 Tap the highlighted cell for the best move!"
+        class="hint-message"
+        accessibilityLabel="Hint is showing the best move"
+      ></Label>
+
+      <!-- Game Board -->
+      <GridLayout
+        rows="*, *, *"
+        columns="*, *, *"
+        class="game-board"
+        [ariaLabel]="getBoardAriaLabel()"
+        role="grid"
+      >
+        <!-- All 9 cells -->
+        <StackLayout
+          *ngFor="let position of cellPositions"
+          [row]="position.row"
+          [col]="position.col"
+          (tap)="makeMove(position.index)"
+          class="cell-container"
+          [ariaLabel]="getCellAriaLabel(position.index)"
+          role="gridcell"
+          accessibilityRole="button"
+        >
+          <Label
+            [text]="
+              gameService.cells[position.index] !== '-'
+                ? gameService.cells[position.index]
+                : ''
+            "
+            class="cell"
+            [ngClass]="
+              getCellClass(gameService.cells[position.index], position.index)
+            "
+            [ariaHidden]="true"
+          ></Label>
+
+          <GridLayout
+            *ngIf="
+              !gameService.cells[position.index] &&
+              gameService.gameState === GameState.Playing
+            "
+            class="cell-hover-effect"
+          >
+            <Label
+              [text]="gameService.currentPlayer"
+              class="cell-ghost"
+            ></Label>
+          </GridLayout>
+
+          <Label
+            *ngIf="suggestedMove === position.index && showHint"
+            text="✨"
+            class="hint-indicator"
+            accessibilityLabel="Suggested move"
+          ></Label>
+        </StackLayout>
+      </GridLayout>
+
+      <!-- Action Buttons -->
+      <FlexboxLayout class="action-buttons">
+        <Button
+          [text]="
+            currentMode === GameMode.Online ? '🚪 Leave Game' : '🔄 New Game'
+          "
+          (tap)="resetGame()"
+          class="btn btn-primary"
+          [isEnabled]="!isAnimating"
+          [accessibilityLabel]="
+            currentMode === GameMode.Online
+              ? 'Leave current game'
+              : 'Start new game'
+          "
+        ></Button>
+
+        <Button
+          *ngIf="currentMode === GameMode.Offline"
+          text="📊 Reset Scores"
+          (tap)="resetScores()"
+          class="btn btn-secondary"
+          accessibilityLabel="Reset all scores"
+        ></Button>
+      </FlexboxLayout>
+
+      <!-- Statistics Panel -->
+      <StackLayout *ngIf="showStats" class="stats-panel">
+        <Label text="📊 Game Statistics" class="panel-title"></Label>
+
+        <GridLayout rows="auto, auto" columns="*, *" class="stats-grid">
+          <StackLayout row="0" col="0" class="stat-item">
+            <Label text="Games Played" class="stat-label"></Label>
+            <Label [text]="gamesPlayed" class="stat-value"></Label>
+          </StackLayout>
+
+          <StackLayout row="0" col="1" class="stat-item">
+            <Label text="Current Streak" class="stat-label"></Label>
+            <Label [text]="currentStreak" class="stat-value streak"></Label>
+          </StackLayout>
+
+          <StackLayout row="1" col="0" class="stat-item">
+            <Label text="Longest Streak" class="stat-label"></Label>
+            <Label [text]="longestStreak" class="stat-value"></Label>
+          </StackLayout>
+
+          <StackLayout row="1" col="1" class="stat-item">
+            <Label text="X Win Rate" class="stat-label"></Label>
+            <Label [text]="xWinRate + '%'" class="stat-value"></Label>
+          </StackLayout>
+        </GridLayout>
+
+        <!-- Win Rate Progress Bars -->
+        <StackLayout class="progress-section">
+          <Label text="Win Distribution" class="progress-title"></Label>
+
+          <StackLayout class="progress-item">
+            <GridLayout columns="60, *" class="progress-header">
+              <Label col="0" text="X" class="progress-label player-x"></Label>
+              <Label
+                col="1"
+                [text]="xWinRate + '%'"
+                class="progress-value"
+              ></Label>
+            </GridLayout>
+            <StackLayout class="progress-bar">
+              <StackLayout
+                class="progress-fill player-x-fill"
+                [width]="xWinRate + '%'"
+              ></StackLayout>
+            </StackLayout>
+          </StackLayout>
+
+          <StackLayout class="progress-item">
+            <GridLayout columns="60, *" class="progress-header">
+              <Label col="0" text="Draws" class="progress-label draw"></Label>
+              <Label
+                col="1"
+                [text]="drawRate + '%'"
+                class="progress-value"
+              ></Label>
+            </GridLayout>
+            <StackLayout class="progress-bar">
+              <StackLayout
+                class="progress-fill draw-fill"
+                [width]="drawRate + '%'"
+              ></StackLayout>
+            </StackLayout>
+          </StackLayout>
+
+          <StackLayout class="progress-item">
+            <GridLayout columns="60, *" class="progress-header">
+              <Label col="0" text="O" class="progress-label player-o"></Label>
+              <Label
+                col="1"
+                [text]="oWinRate + '%'"
+                class="progress-value"
+              ></Label>
+            </GridLayout>
+            <StackLayout class="progress-bar">
+              <StackLayout
+                class="progress-fill player-o-fill"
+                [width]="oWinRate + '%'"
+              ></StackLayout>
+            </StackLayout>
+          </StackLayout>
+        </StackLayout>
+      </StackLayout>
+
+      <!-- Settings Panel -->
+      <StackLayout *ngIf="showSettings" class="settings-panel">
+        <Label text="⚙️ Game Settings" class="panel-title"></Label>
+
+        <StackLayout class="setting-item">
+          <Label text="Animation Speed" class="setting-label"></Label>
+          <SegmentedBar
+            [selectedIndex]="
+              settings.animationSpeed === 'fast'
+                ? 0
+                : settings.animationSpeed === 'normal'
+                ? 1
+                : 2
+            "
+            (selectedIndexChange)="onAnimationSpeedChange($event)"
+            class="setting-control"
+            accessibilityLabel="Animation speed selector"
+          >
+            <SegmentedBarItem title="Fast"></SegmentedBarItem>
+            <SegmentedBarItem title="Normal"></SegmentedBarItem>
+            <SegmentedBarItem title="Slow"></SegmentedBarItem>
+          </SegmentedBar>
+        </StackLayout>
+
+        <GridLayout columns="*, auto" class="setting-item">
+          <Label col="0" text="🔊 Sound Effects" class="setting-label"></Label>
+          <Switch
+            col="1"
+            [checked]="settings.soundEnabled"
+            (checkedChange)="onSoundToggle($event)"
+            class="setting-control"
+            accessibilityLabel="Toggle sound effects"
+          ></Switch>
+        </GridLayout>
+
+        <StackLayout
+          *ngIf="settings.soundEnabled"
+          class="setting-item indented"
+        >
+          <Label text="Volume" class="setting-label small"></Label>
+          <Slider
+            [value]="settings.soundVolume * 100"
+            minValue="0"
+            maxValue="100"
+            (valueChange)="onVolumeChange($event)"
+            class="volume-slider"
+            accessibilityLabel="Volume control"
+          ></Slider>
+        </StackLayout>
+
+        <GridLayout columns="*, auto" class="setting-item">
+          <Label
+            col="0"
+            text="📳 Haptic Feedback"
+            class="setting-label"
+          ></Label>
+          <Switch
+            col="1"
+            [checked]="settings.vibrationEnabled"
+            (checkedChange)="onHapticToggle($event)"
+            class="setting-control"
+            accessibilityLabel="Toggle haptic feedback"
+          ></Switch>
+        </GridLayout>
+
+        <GridLayout
+          *ngIf="currentMode === GameMode.Offline"
+          columns="*, auto"
+          class="setting-item"
+        >
+          <Label col="0" text="💡 Show Hints" class="setting-label"></Label>
+          <Switch
+            col="1"
+            [checked]="settings.showHints"
+            (checkedChange)="onHintsToggle($event)"
+            class="setting-control"
+            accessibilityLabel="Toggle hints"
+          ></Switch>
+        </GridLayout>
+
+        <Label
+          *ngIf="currentMode === GameMode.Offline && settings.showHints"
+          text="Hints will suggest the best move during gameplay"
+          class="setting-description"
+        ></Label>
+      </StackLayout>
+
+      <!-- Game Instructions -->
+      <StackLayout
+        class="instructions"
+        *ngIf="
+          gameService.gameState === GameState.Playing &&
+          !showSettings &&
+          !showStats
+        "
+      >
+        <Label text="How to Play" class="instructions-title"></Label>
+        <Label
+          text="• Tap any empty cell to place your mark"
+          class="instruction"
+        ></Label>
+        <Label
+          text="• Get three in a row to win (horizontal, vertical, or diagonal)"
+          class="instruction"
+        ></Label>
+        <Label
+          *ngIf="currentMode === GameMode.Online"
+          text="• Wait for your turn in online mode"
+          class="instruction"
+        ></Label>
+        <Label
+          *ngIf="currentMode === GameMode.Offline"
+          text="• Player X always starts first"
+          class="instruction"
+        ></Label>
+        <Label
+          *ngIf="currentMode === GameMode.Offline && settings.showHints"
+          text="• Use the hint button for strategy suggestions"
+          class="instruction"
+        ></Label>
+      </StackLayout>
+
+      <!-- Achievement Notification -->
+      <StackLayout
+        *ngIf="currentStreak >= 3 && currentMode === GameMode.Offline"
+        class="achievement-banner"
+      >
+        <Label text="🔥 ON FIRE! 🔥" class="achievement-title"></Label>
+        <Label
+          [text]="currentStreak + ' wins in a row!'"
+          class="achievement-text"
+        ></Label>
+      </StackLayout>
+    </StackLayout>
+  </StackLayout>
+</ScrollView>
