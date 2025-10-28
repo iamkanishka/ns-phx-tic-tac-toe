@@ -5,7 +5,7 @@
   <ActionItem ios.position="left" android.position="actionBar">
     <StackLayout orientation="horizontal" verticalAlignment="center">
       <Image
-        src="{{ userAvatar || '~/images/default-avatar.png' }}"
+        [src]="userInfo?.user.picture || 'https://img.icons8.com/?size=100&id=98957&format=png&color=FFFFFF'"
         width="32"
         height="32"
         stretch="aspectFill"
@@ -137,6 +137,7 @@
       <StackLayout *ngIf="showJoinGame" class="join-game-panel">
         <Label text="Join Game" class="panel-subtitle"></Label>
 
+        <!--
         <TextField
           [(ngModel)]="playerName"
           hint="Enter your name"
@@ -146,6 +147,7 @@
           autocorrect="false"
           accessibilityLabel="Player name input"
         ></TextField>
+        -->
 
         <TextField
           [(ngModel)]="gameIdToJoin"
@@ -179,8 +181,8 @@
         class="lobby-actions"
       >
         <Button
-          text="+ Create New Game"
-          (tap)="showCreateGameForm()"
+          text="Start New Game"
+          (tap)="createOnlineGame()"
           class="btn btn-primary btn-large"
           accessibilityLabel="Create new game"
         ></Button>
