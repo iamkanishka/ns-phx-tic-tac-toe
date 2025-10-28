@@ -124,8 +124,8 @@
   color: var(--text-light);
   text-align: center;
   margin-bottom: 20;
-  text-shadow: 2 2 6 rgba(0, 0, 0, 0.3);
-  letter-spacing: 1;
+  
+
 }
 
 .btn-back {
