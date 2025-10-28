@@ -15,6 +15,9 @@ defmodule TicTacToeWeb.Router do
     get "/games/waiting", GameController, :waiting_games
     get "/games/:id", GameController, :show
     get "/games", GameController, :index
+
+    post "/auth/google", AuthController, :google
+
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
