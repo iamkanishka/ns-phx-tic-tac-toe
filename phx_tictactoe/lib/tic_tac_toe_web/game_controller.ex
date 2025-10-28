@@ -49,23 +49,23 @@ defmodule TicTacToeWeb.GameController do
     json(conn, Enum.map(games, &format_game_response/1))
   end
 
-  def waiting_games(conn, _params) do
-    games =
-      Game
-      |> where([g], g.status == "waiting")
-      |> order_by([g], desc: g.inserted_at)
-      |> limit(20)
-      |> Repo.all()
+ def waiting_games(conn, %{"user_id" => user_id}) do
+  games =
+    Game
+    |> where([g], g.status == "waiting" and g.player_x_name == ^user_id)
+    |> order_by([g], desc: g.inserted_at)
+    |> limit(20)
+    |> Repo.all()
 
-    json(conn, Enum.map(games, fn game ->
-      %{
-        id: game.id,
-        player_x_name: game.player_x_name,
-        status: game.status,
-        created_at: game.inserted_at
-      }
-    end))
-  end
+  json(conn, Enum.map(games, fn game ->
+    %{
+      id: game.id,
+      player_x_name: game.player_x_name,
+      status: game.status,
+      created_at: game.inserted_at
+    }
+  end))
+end
 
   def stats(conn, _params) do
     total_games = Repo.aggregate(Game, :count, :id)
