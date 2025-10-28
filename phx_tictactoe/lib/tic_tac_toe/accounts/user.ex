@@ -1,27 +1,41 @@
-# lib/tic_tac_toe/accounts/user.ex
 defmodule TicTacToe.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "users" do
-    field :email, :string
-    field :name, :string
-    field :avatar_url, :string
-    field :google_uid, :string
-    field :provider, :string
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @derive {Phoenix.Param, key: :id}
+  @foreign_key_type :binary_id
 
-    has_many :games_as_x, TicTacToe.Game.Game, foreign_key: :player_x_id
-    has_many :games_as_o, TicTacToe.Game.Game, foreign_key: :player_o_id
-    has_many :moves, TicTacToe.Game.Move
+  schema "users" do
+    # Matches Google userinfo response
+    field :sub, :string
+    field :name, :string
+    field :given_name, :string
+    field :family_name, :string
+    field :picture, :string
+    field :email, :string
+    field :email_verified, :boolean, default: false
+
+    # Associations
+    has_many :games_as_x, TicTacToe.Games.Game, foreign_key: :player_x_id
+    has_many :games_as_o, TicTacToe.Games.Game, foreign_key: :player_o_id
 
     timestamps()
   end
 
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:email, :name, :avatar_url, :google_uid, :provider])
-    |> validate_required([:email, :name, :google_uid])
+    |> cast(attrs, [
+      :sub,
+      :name,
+      :given_name,
+      :family_name,
+      :picture,
+      :email,
+      :email_verified
+    ])
+    |> validate_required([:sub, :name, :email])
+    |> unique_constraint(:sub)
     |> unique_constraint(:email)
-    |> unique_constraint(:google_uid)
   end
 end
