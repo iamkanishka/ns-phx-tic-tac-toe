@@ -107,11 +107,11 @@ export class GameSocketService implements OnDestroy {
   }
 
   // ========================================================
-  // GET WAITING GAMES
+  // GET WAITING GAMESs
   // ========================================================
-  async getWaitingGames(): Promise<WaitingGame[]> {
+  async getWaitingGames(userId): Promise<WaitingGame[]> {
     return await this.handleRequest<WaitingGame[]>({
-      url: `${this.BASE_URL}/api/games/waiting`,
+      url: `${this.BASE_URL}/api/games/waiting?user_id=${userId}`,
       method: "GET",
       headers: { Accept: "application/json" },
     });
