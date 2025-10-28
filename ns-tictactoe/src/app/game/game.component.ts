@@ -20,7 +20,7 @@ import { View } from "@nativescript/core";
 import { Dialogs } from "@nativescript/core";
 import { GoogleSignin, User } from "@nativescript/google-signin";
 import { RouterExtensions } from "@nativescript/angular";
-import { AuthService } from "../auth/service/auth/auth.service";
+import { AuthenticatedUserResponse, AuthService, GoogleUser } from "../auth/service/auth/auth.service";
 
 
 interface CellPosition {
@@ -93,10 +93,8 @@ export class GameComponent implements OnInit, OnDestroy {
   public isLoadingGames = false;
 
   // user info
-  public user: unknown = null;
+  userInfo: AuthenticatedUserResponse | null = null;
   
-  userAvatar: string = "https://lh3.googleusercontent.com/a/ACg8ocJCBs9wsSipS7LGJ096TFAmhzfkwbte029Z7_TXqh8oAlStJglZ=s96-c";
-
   constructor(
     public gameService: GameService,
     public gameSocketService: GameSocketService,
@@ -114,10 +112,14 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+     // Start by loading Google user info
+     this.loadGoogleUserInfo();
+
     // Subscribe to local game state
     this.gameService.board$
       .pipe(takeUntil(this.destroy$))
       .subscribe((board) => {
+      
         this.updateStats(board);
         this.cdRef.detectChanges();
       });
@@ -182,7 +184,7 @@ export class GameComponent implements OnInit, OnDestroy {
         }
       });
 
-      this.user = this.authService.getCurrentUser();
+    
 
   }
 
@@ -305,9 +307,8 @@ export class GameComponent implements OnInit, OnDestroy {
   switchToOnlineMode(): void {
     this.currentMode = GameMode.Online;
     this.showLobby = true;
-    // this.loadWaitingGames();
-
-    // this.createOnlineGame()
+    this.loadWaitingGames();
+ 
   }
 
   switchToOfflineMode(): void {
@@ -324,7 +325,7 @@ export class GameComponent implements OnInit, OnDestroy {
   async loadWaitingGames(): Promise<void> {
     this.isLoadingGames = true;
     try {
-      this.waitingGames = await this.gameSocketService.getWaitingGames();
+      this.waitingGames = await this.gameSocketService.getWaitingGames(this.userInfo?.user.id);
     } catch (error: any) {
       this.showToast("Failed to load games", "error");
     } finally {
@@ -354,17 +355,12 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   async createOnlineGame(): Promise<void> {
-    console.log("Name" + this.playerName);
-
-    if (!this.playerName.trim()) {
-      this.showToast("Please enter your name", "error");
-      return;
-    }
+   
    
    try {
       this.currentGameId = await this.gameSocketService.createGame(
-        this.playerId,
-        this.playerName
+        this.userInfo.user.id,
+        this.userInfo.user.name
       );
 
       console.log(this.currentGameId + "Game Created");
@@ -381,24 +377,24 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   async joinOnlineGame(gameId: string): Promise<void> {
-    if (!this.playerName.trim()) {
-      const result = await Dialogs.prompt({
-        title: "Enter Your Name",
-        message: "What's your name?",
-        okButtonText: "Join",
-        cancelButtonText: "Cancel",
-        defaultText: "Player 2",
-      });
+    // if (!this.playerName.trim()) {
+    //   const result = await Dialogs.prompt({
+    //     title: "Enter Your Name",
+    //     message: "What's your name?",
+    //     okButtonText: "Join",
+    //     cancelButtonText: "Cancel",
+    //     defaultText: "Player 2",
+    //   });
 
-      if (!result.result) return;
-      this.playerName = result.text || "Player 2";
-    }
+    //   if (!result.result) return;
+    //   this.playerName = result.text || "Player 2";
+    // }
 
     try {
       await this.gameSocketService.joinGame(
         gameId,
-        this.playerId,
-        this.playerName
+        this.userInfo.user.id,
+        this.userInfo.user.name
       );
       this.currentGameId = gameId;
       this.showLobby = false;
@@ -723,6 +719,22 @@ export class GameComponent implements OnInit, OnDestroy {
     GoogleSignin.signOut();
    this.router.navigate(["signin"]);
     
+  }
+
+   private loadGoogleUserInfo(): void {
+    try {
+      this.authService.user$.subscribe({
+        next: (data: AuthenticatedUserResponse) => {
+          console.log("✅ Google user info:", data);
+          this.userInfo = data;
+        },
+        error: (err: unknown) => {
+          console.error("❌ Error fetching Google user info:", err);
+        },
+      });
+    } catch (error: unknown) {
+      console.error("⚠️ Unable to get Google user info:", error);
+    }
   }
 
 }
