@@ -52,7 +52,7 @@ defmodule TicTacToeWeb.GameController do
  def waiting_games(conn, %{"user_id" => user_id}) do
   games =
     Game
-    |> where([g], g.status == "waiting" and g.player_x_name == ^user_id)
+    |> where([g], g.status == "waiting" and g.player_x_id == ^user_id)
     |> order_by([g], desc: g.inserted_at)
     |> limit(20)
     |> Repo.all()
