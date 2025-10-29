@@ -120,27 +120,64 @@ export class GameSocketService implements OnDestroy {
   // ========================================================
   // JOIN GAME
   // ========================================================
-  async joinGame(
-    gameId: string,
-    playerId: string,
-    playerName: string
-  ): Promise<void> {
-    await this.connectToGame(gameId, playerId, playerName);
-    this.myPlayerSymbolSubject.next("O");
+  // async joinGame(
+  //   gameId: string,
+  //   playerId: string,
+  //   playerName: string
+  // ): Promise<void> {
+  //   await this.connectToGame(gameId, playerId, playerName);
+  //   this.myPlayerSymbolSubject.next("O");
 
-    if (this.channel) {
-      this.channel
-        .push("join_game", {})
-        .receive("ok", (response: any) => {
-          console.log("Joined game successfully:", response);
-          this.updateGameState(response);
-        })
-        .receive("error", (error: any) => {
-          console.error("Failed to join game:", error);
+  //   if (this.channel) {
+  //     this.channel
+  //       .push("join_game", {})
+  //       .receive("ok", (response: any) => {
+  //         console.log("Joined game successfully:", response);
+  //         this.updateGameState(response);
+  //       })
+  //       .receive("error", (error: any) => {
+  //         console.error("Failed to join game:", error);
+  //         this.errorSubject.next(`Failed to join: ${error.reason}`);
+  //       });
+  //   }
+  // }
+
+
+  async joinGame(
+  gameId: string,
+  playerId: string,
+  playerName: string
+): Promise<void> {
+  await this.connectToGame(gameId, playerId, playerName);
+
+  if (this.channel) {
+    this.channel
+      .push("join_game", {})
+      .receive("ok", (response: any) => {
+        console.log("Joined/Rejoined game successfully:", response);
+        this.updateGameState(response);
+        
+        // Determine player symbol based on the response
+        if (response.player_x?.id === playerId) {
+          this.myPlayerSymbolSubject.next("X");
+        } else if (response.player_o?.id === playerId) {
+          this.myPlayerSymbolSubject.next("O");
+        }
+      })
+      .receive("error", (error: any) => {
+        console.error("Failed to join game:", error);
+        
+        // If error is because game is finished, handle it differently
+        if (error.reason === "game_finished") {
+          this.errorSubject.next("This game has already finished");
+        } else if (error.reason === "game_full") {
+          this.errorSubject.next("Game is full");
+        } else {
           this.errorSubject.next(`Failed to join: ${error.reason}`);
-        });
-    }
+        }
+      });
   }
+}
 
   // ========================================================
   // SOCKET CONNECTION (NativeScript WebSocket)
