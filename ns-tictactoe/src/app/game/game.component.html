@@ -1,11 +1,23 @@
 <!-- game.component.html - COMPLETE MULTIPLAYER VERSION -->
 
-<ActionBar title="" c backgroundColor="black">
+<ActionBar title="" backgroundColor="black">
+  <!-- 🔙 Back Button -->
+  <NavigationButton
+    text="←"
+    (tap)="switchToOfflineMode()"
+    android.systemIcon="ic_menu_back"
+    color="white"
+    accessibilityLabel="Go Back"
+  ></NavigationButton>
+
   <!-- 🧑‍💼 User Avatar (Left) -->
   <ActionItem ios.position="left" android.position="actionBar">
     <StackLayout orientation="horizontal" verticalAlignment="center">
       <Image
-        [src]="userInfo?.user.picture || 'https://img.icons8.com/?size=100&id=98957&format=png&color=FFFFFF'"
+        [src]="
+          userInfo?.user.picture ||
+          'https://img.icons8.com/?size=100&id=98957&format=png&color=FFFFFF'
+        "
         width="32"
         height="32"
         stretch="aspectFill"
@@ -60,7 +72,7 @@
 
       <Label text="Choose Game Mode" class="mode-subtitle"></Label>
 
-       <!--
+      <!--
       <button
         text="🎮 Play Offline"
         (tap)="switchToOfflineMode()"
@@ -96,12 +108,14 @@
     <StackLayout *ngIf="showLobby" class="lobby">
       <Label text="🌐 Online Multiplayer" class="lobby-title"></Label>
 
+      <!--
       <Button
         text="← Back to Menu"
         (tap)="switchToOfflineMode()"
         class="btn btn-back"
         accessibilityLabel="Back to main menu"
       ></Button>
+      -->
 
       <!-- Create Game Form -->
       <StackLayout *ngIf="showCreateGame" class="create-game-panel">
@@ -180,19 +194,33 @@
         *ngIf="!showCreateGame && !showJoinGame"
         class="lobby-actions"
       >
-        <Button
-          text="Start New Game"
+        <button
+          text="🎮  Start New Game"
           (tap)="createOnlineGame()"
-          class="btn btn-primary btn-large"
+          class="btn-primary"
+          color="white"
+          borderRadius="24"
+          width="220"
+          height="48"
+          elevation="4"
+          horizontalAlignment="center"
           accessibilityLabel="Create new game"
-        ></Button>
+        ></button>
 
-        <Button
+        <button
           text="📋 Join by Game ID"
           (tap)="showJoinGameForm()"
-          class="btn btn-secondary btn-large"
+          class="btn-secondary"
+          color="white"
+          borderRadius="24"
+          width="220"
+          height="48"
+          elevation="4"
+          horizontalAlignment="center"
           accessibilityLabel="Join game by ID"
-        ></Button>
+        ></button>
+
+        <!--
 
         <Label text="OR" class="divider-text"></Label>
 
@@ -203,6 +231,7 @@
           [isEnabled]="!isLoadingGames"
           accessibilityLabel="Refresh available games"
         ></Button>
+          -->
       </StackLayout>
 
       <!-- Waiting Games List -->
@@ -241,9 +270,28 @@
             <Button
               col="1"
               text="Join"
-              class="btn btn-join"
+              class="btn-join"
+              borderRadius="24"
+              width="100"
+              height="48"
+              elevation="4"
               accessibilityLabel="Join this game"
             ></Button>
+
+            <!--
+             <Button
+         text="🎮  Start New Game"
+          (tap)="createOnlineGame()"
+       class="btn-primary "
+        color="white"
+        borderRadius="24"
+        width="220"
+        height="48"
+        elevation="4"
+        horizontalAlignment="center"
+       accessibilityLabel="Create new game"
+      ></Button>
+            -->
           </GridLayout>
         </StackLayout>
 
@@ -330,7 +378,7 @@
         ></Label>
       </StackLayout>
 
-      <!-- Header -->
+      <!-- Header 
       <StackLayout class="header">
         <Label
           [text]="getStatusMessage()"
@@ -348,6 +396,7 @@
           [accessibilityLabel]="getStatusSubtitle()"
         ></Label>
       </StackLayout>
+      -->
 
       <!-- Score Board (Offline only) -->
       <GridLayout
