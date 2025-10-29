@@ -103,7 +103,8 @@ export class GameComponent implements OnInit, OnDestroy {
     private cdRef: ChangeDetectorRef,
     private clipboardService: ClipboardService,
      private router: RouterExtensions,
-     private authService: AuthService
+     private authService: AuthService,
+      private routerExtensions: RouterExtensions
   ) {
     this.settings = this.gameService.settings;
     this.playerId = this.gameSocketService.generatePlayerId();
@@ -736,5 +737,11 @@ export class GameComponent implements OnInit, OnDestroy {
       console.error("⚠️ Unable to get Google user info:", error);
     }
   }
+ 
+  goBack() {
+    this.routerExtensions.back();
+  }
+
+
 
 }
