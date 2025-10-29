@@ -43,6 +43,19 @@ defmodule TicTacToeWeb.GameChannel do
     end
   end
 
+  def handle_in("rejoin_game", _payload, socket) do
+    game_id = socket.assigns.game_id
+    player_id = socket.assigns.player_id
+
+    case GameServer.rejoin_game(game_id, player_id) do
+      {:ok, game} ->
+        {:reply, {:ok, format_game_state(game)}, socket}
+
+      {:error, reason} ->
+        {:reply, {:error, %{reason: Atom.to_string(reason)}}, socket}
+    end
+  end
+
   def handle_in("make_move", %{"index" => index}, socket) do
     game_id = socket.assigns.game_id
     player_id = socket.assigns.player_id
@@ -58,6 +71,13 @@ defmodule TicTacToeWeb.GameChannel do
 
   def handle_info({:game_started, game}, socket) do
     push(socket, "game_started", format_game_state(game))
+    {:noreply, socket}
+  end
+
+  def handle_info({:player_rejoined, game, player_id}, socket) do
+    push(socket, "player_rejoined", Map.merge(format_game_state(game), %{
+      rejoined_player_id: player_id
+    }))
     {:noreply, socket}
   end
 
