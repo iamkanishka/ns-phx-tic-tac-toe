@@ -27,12 +27,30 @@ defmodule TicTacToe.Games.GameServer do
     GenServer.call(via_tuple(game_id), {:join_game, player_id, player_name})
   end
 
+  def rejoin_game(game_id, player_id) do
+    GenServer.call(via_tuple(game_id), {:rejoin_game, player_id})
+  end
+
   def handle_call(:get_state, _from, game) do
     {:reply, {:ok, game}, game}
   end
 
   def handle_call({:join_game, player_id, player_name}, _from, game) do
     cond do
+      # Check if player is already in the game and game is active (waiting or playing)
+      (game.player_x_id == player_id or game.player_o_id == player_id) and
+      game.status in ["waiting", "playing"] ->
+        # Player already joined, treat as rejoin
+        refreshed_game = Repo.get(Game, game.id)
+
+        Phoenix.PubSub.broadcast(
+          TicTacToe.PubSub,
+          "game:#{game.id}",
+          {:player_rejoined, refreshed_game, player_id}
+        )
+
+        {:reply, {:ok, refreshed_game}, refreshed_game}
+
       game.player_o_id != nil ->
         {:reply, {:error, :game_full}, game}
 
@@ -56,6 +74,29 @@ defmodule TicTacToe.Games.GameServer do
         )
 
         {:reply, {:ok, updated_game}, updated_game}
+    end
+  end
+
+  def handle_call({:rejoin_game, player_id}, _from, game) do
+    cond do
+      (game.player_x_id == player_id or game.player_o_id == player_id) and
+      game.status in ["waiting", "playing"] ->
+        # Player is part of this game and it's still active, refresh state from DB
+        refreshed_game = Repo.get(Game, game.id)
+
+        Phoenix.PubSub.broadcast(
+          TicTacToe.PubSub,
+          "game:#{game.id}",
+          {:player_rejoined, refreshed_game, player_id}
+        )
+
+        {:reply, {:ok, refreshed_game}, refreshed_game}
+
+      game.status not in ["waiting", "playing"] ->
+        {:reply, {:error, :game_finished}, game}
+
+      true ->
+        {:reply, {:error, :not_a_player}, game}
     end
   end
 
@@ -140,11 +181,11 @@ defmodule TicTacToe.Games.GameServer do
     ]
 
    Enum.find_value(winning_combinations, fn [a, b, c] = combo ->
-  if Enum.at(board, a) not in ["", "-"] and
-       Enum.at(board, a) == Enum.at(board, b) and
-       Enum.at(board, b) == Enum.at(board, c) do
-    combo
-  end
-end)
+      if Enum.at(board, a) not in ["", "-"] and
+           Enum.at(board, a) == Enum.at(board, b) and
+           Enum.at(board, b) == Enum.at(board, c) do
+        combo
+      end
+    end)
   end
 end
