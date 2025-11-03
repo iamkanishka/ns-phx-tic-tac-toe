@@ -21,6 +21,7 @@ export enum SoundType {
   Invalid = "invalid",
   Reset = "reset",
   Click = "click",
+  Confetti = "confetti",
 }
 
 @Injectable({
@@ -38,6 +39,8 @@ export class SoundService {
     [SoundType.Invalid]: "assets/sounds/invalid.wav",
     [SoundType.Reset]: "assets/sounds/reset.wav",
     [SoundType.Click]: "assets/sounds/click.wav",
+    [SoundType.Confetti]: "assets/sounds/confetti.wav",
+
   };
 
   constructor() {}
