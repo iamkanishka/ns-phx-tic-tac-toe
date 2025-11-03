@@ -9,13 +9,14 @@ import { Page } from '@nativescript/core';
 import { HttpClientModule } from "@angular/common/http";
 import { AuthModule } from "./auth/auth.module";
 import { SignInComponent } from "./auth/sign-in/sign-in.component";
+import { ConfettiComponent } from "./game/confetti.component";
 
 
 
 @NgModule({
   bootstrap: [AppComponent],
   imports: [NativeScriptModule, AppRoutingModule, NativeScriptFormsModule, HttpClientModule, AuthModule],
-  declarations: [AppComponent, GameComponent],
+  declarations: [AppComponent, GameComponent, ConfettiComponent],
    providers: [
     Page // ✅ Add this line
   ],
