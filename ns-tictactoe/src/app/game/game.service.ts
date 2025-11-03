@@ -132,6 +132,7 @@ export class GameService implements OnDestroy {
     if (winningLine) {
       newScores[board.currentPlayer]++;
       this.soundService.play(SoundType.Win, this.settings.soundVolume);
+      
       this.hapticService.trigger(HapticIntensity.Success);
     } else if (isDraw) {
       newScores.draws++;
@@ -308,4 +309,9 @@ export class GameService implements OnDestroy {
       scores: currentBoard.scores,
     });
   }
+
+
+  confettiCelebrate(): void {    
+    this.soundService.play(SoundType.Confetti, this.settings.soundVolume);
+   }
 }
