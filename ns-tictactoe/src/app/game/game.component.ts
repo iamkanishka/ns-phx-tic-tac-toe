@@ -8,6 +8,8 @@ import {
   ChangeDetectorRef,
   ViewChild,
   ElementRef,
+  ViewChildren,
+  QueryList,
 } from "@angular/core";
 import { GameService, GameState, Player, GameSettings } from "./game.service";
 import { GameSocketService, ConnectionStatus } from "./game-socket.service";
@@ -20,8 +22,12 @@ import { View } from "@nativescript/core";
 import { Dialogs } from "@nativescript/core";
 import { GoogleSignin, User } from "@nativescript/google-signin";
 import { RouterExtensions } from "@nativescript/angular";
-import { AuthenticatedUserResponse, AuthService, GoogleUser } from "../auth/service/auth/auth.service";
-
+import {
+  AuthenticatedUserResponse,
+  AuthService,
+  GoogleUser,
+} from "../auth/service/auth/auth.service";
+import { ConfettiComponent } from "./confetti.component";
 
 interface CellPosition {
   row: number;
@@ -48,6 +54,9 @@ interface WaitingGame {
   styleUrls: ["./game.component.css"],
 })
 export class GameComponent implements OnInit, OnDestroy {
+  @ViewChild("confetti", { static: false })
+  confetti_Burst!: ConfettiComponent;
+
   private destroy$ = new Subject<void>();
 
   // Enums for template
@@ -94,7 +103,11 @@ export class GameComponent implements OnInit, OnDestroy {
 
   // user info
   userInfo: AuthenticatedUserResponse | null = null;
-  
+
+  // 🔹 Added: All cell element references
+  //  @ViewChildren("cellRef", { read: ElementRef }) cellRefs!: QueryList<ElementRef>;
+  cellRefs: View[] = [];
+
   constructor(
     public gameService: GameService,
     public gameSocketService: GameSocketService,
@@ -102,9 +115,9 @@ export class GameComponent implements OnInit, OnDestroy {
     private animationService: AnimationService,
     private cdRef: ChangeDetectorRef,
     private clipboardService: ClipboardService,
-     private router: RouterExtensions,
-     private authService: AuthService,
-      private routerExtensions: RouterExtensions
+    private router: RouterExtensions,
+    private authService: AuthService,
+    private routerExtensions: RouterExtensions
   ) {
     this.settings = this.gameService.settings;
     this.playerId = this.gameSocketService.generatePlayerId();
@@ -113,14 +126,13 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-     // Start by loading Google user info
-     this.loadGoogleUserInfo();
+    // Start by loading Google user info
+    this.loadGoogleUserInfo();
 
     // Subscribe to local game state
     this.gameService.board$
       .pipe(takeUntil(this.destroy$))
       .subscribe((board) => {
-      
         this.updateStats(board);
         this.cdRef.detectChanges();
       });
@@ -184,9 +196,6 @@ export class GameComponent implements OnInit, OnDestroy {
           this.showToast(error, "error");
         }
       });
-
-    
-
   }
 
   ngOnDestroy(): void {
@@ -215,45 +224,88 @@ export class GameComponent implements OnInit, OnDestroy {
   // ============================================
 
   async makeMove(index: number, view?: View): Promise<void> {
-    if (this.isAnimating) return;
+    console.log("Tapped index:", index, "View is", view ? "OK" : "MISSING");
 
-    if (this.currentMode === GameMode.Online) {
-      // Online mode - check if it's player's turn
-      if (!this.gameSocketService.isMyTurn()) {
-        this.showToast("Not your turn!", "error");
-        return;
-      }
- 
+    // 🧩 Block input if already animating or not playing
+    if (this.isAnimating || this.gameService.gameState !== GameState.Playing)
+      return;
+    this.isAnimating = true;
 
-      if (this.gameService.cells[index] !== "" && this.gameService.cells[index] !== "-" ) {
-        return;
-      }
-
-      this.gameSocketService.makeMove(index);
-    } else {
-      // Offline mode
-      if (this.gameService.gameState !== GameState.Playing) {
-        return;
-      }
-
-      this.isAnimating = true;
-      this.cellStates[index] = true;
-      this.suggestedMove = null;
-
+    try {
+      // 🎯 Animate tapped cell (pop)
       if (view) {
         await this.animationService.cellPop(view);
-      } else {
-        await this.delay(this.getAnimationSpeed());
       }
 
-      const success = this.gameService.makeMove(index);
+      // 🧠 Make the move in game logic
+      const moveSuccessful = this.gameService.makeMove(index);
 
-      if (success && this.gameService.gameState !== GameState.Playing) {
-        await this.delay(300);
-        // Trigger celebration
+      // 🏆 Handle win condition
+      if (moveSuccessful && this.gameService.gameState !== GameState.Playing) {
+        const winningLine = this.gameService.winningLine;
+
+        if (winningLine && winningLine.length > 0) {
+          // Collect all winning cell views
+          const winViews: View[] = winningLine
+            .map((i) => this.cellRefs[i])
+            .filter((v): v is View => !!v);
+
+          // ✨ Animate each winning cell with a pulse
+          // for (const v of winViews) {
+          //   await this.animationService.winningCellAnimation(v);
+          // }
+
+          // 💫 Multi-cell shake celebration
+          await this.animationService.multiCellShake(winViews);
+
+          // 🥇 Center cell extra celebration
+          const centerIndex = winningLine[Math.floor(winningLine.length / 2)];
+          const centerCell = this.cellRefs[centerIndex];
+          if (centerCell) {
+            await this.animationService.celebrateWin(centerCell);
+            // Trigger confetti animation
+          }
+
+          this.confetti_Burst.trigger();
+          this.gameService.confettiCelebrate();
+
+          // 🔁 Continuous pulse loop for winning cells
+          this.loopWinningPulse(winViews);
+        }
       }
 
+      // 😅 Handle draw — shake all cells slightly
+      if (
+        this.gameService.gameState !== GameState.Playing &&
+        !this.gameService.winningLine
+      ) {
+        for (const ref of this.cellRefs) {
+          const cell = ref as View;
+          if (cell) {
+            await this.animationService.shakeAnimation(cell);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("makeMove animation error:", err);
+    } finally {
+      // ✅ Reset animation lock
       this.isAnimating = false;
+    }
+  }
+
+  private async loopWinningPulse(winViews: View[]): Promise<void> {
+    try {
+      // Keep pulsing until new game starts or state changes
+      while (this.gameService.gameState !== GameState.Playing) {
+        const pulseAnimations = winViews.map((v) =>
+          this.animationService.winningCellAnimation(v)
+        );
+        await Promise.all(pulseAnimations);
+        await new Promise((resolve) => setTimeout(resolve, 600)); // small pause
+      }
+    } catch (err) {
+      console.error("loopWinningPulse error:", err);
     }
   }
 
@@ -309,7 +361,6 @@ export class GameComponent implements OnInit, OnDestroy {
     this.currentMode = GameMode.Online;
     this.showLobby = true;
     this.loadWaitingGames();
- 
   }
 
   switchToOfflineMode(): void {
@@ -326,7 +377,9 @@ export class GameComponent implements OnInit, OnDestroy {
   async loadWaitingGames(): Promise<void> {
     this.isLoadingGames = true;
     try {
-      this.waitingGames = await this.gameSocketService.getWaitingGames(this.userInfo?.user.id);
+      this.waitingGames = await this.gameSocketService.getWaitingGames(
+        this.userInfo?.user.id
+      );
     } catch (error: any) {
       this.showToast("Failed to load games", "error");
     } finally {
@@ -356,9 +409,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   async createOnlineGame(): Promise<void> {
-   
-   
-   try {
+    try {
       this.currentGameId = await this.gameSocketService.createGame(
         this.userInfo.user.id,
         this.userInfo.user.name
@@ -453,26 +504,37 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   showHintMove(): void {
-    if (
-      !this.settings.showHints ||
-      this.gameService.gameState !== GameState.Playing
-    ) {
-      return;
-    }
-
-    if (this.currentMode === GameMode.Online) {
-      this.showToast("Hints not available in online mode", "info");
-      return;
-    }
-
-    this.suggestedMove = this.gameService.getSuggestedMove();
-    this.showHint = true;
-
-    setTimeout(() => {
-      this.showHint = false;
-      this.suggestedMove = null;
-    }, 2000);
+  if (
+    !this.settings.showHints ||
+    this.gameService.gameState !== GameState.Playing
+  ) {
+    return;
   }
+
+  if (this.currentMode === GameMode.Online) {
+    this.showToast("Hints not available in online mode", "info");
+    return;
+  }
+
+  // 🎯 Choose the hint position
+  this.suggestedMove = this.gameService.getSuggestedMove();
+  this.showHint = true;
+
+  // Wait a tick so the hint label renders before animation
+  setTimeout(() => {
+    const hintView = this.cellRefs[this.suggestedMove];
+    if (hintView && hintView.isLoaded) {
+      this.animationService.animateHint(hintView);
+    }
+  }, 100);
+
+  // ⏳ Hide after 2 seconds
+  setTimeout(() => {
+    this.showHint = false;
+    this.suggestedMove = null;
+  }, 2000);
+}
+
 
   onAnimationSpeedChange(args: any): void {
     const speeds = ["fast", "normal", "slow"];
@@ -714,15 +776,13 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-   
   logOut() {
     console.log("Signing out");
     GoogleSignin.signOut();
-   this.router.navigate(["signin"]);
-    
+    this.router.navigate(["signin"]);
   }
 
-   private loadGoogleUserInfo(): void {
+  private loadGoogleUserInfo(): void {
     try {
       this.authService.user$.subscribe({
         next: (data: AuthenticatedUserResponse) => {
@@ -737,11 +797,17 @@ export class GameComponent implements OnInit, OnDestroy {
       console.error("⚠️ Unable to get Google user info:", error);
     }
   }
- 
+
   goBack() {
     this.routerExtensions.back();
   }
 
+  registerCell(index: number, view: View) {
+    this.cellRefs[index] = view;
+  }
 
-
+  celebrate() {
+    this.confetti_Burst.trigger();
+    this.gameService.confettiCelebrate();
+  }
 }
