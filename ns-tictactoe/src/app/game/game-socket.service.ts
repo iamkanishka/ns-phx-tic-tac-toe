@@ -50,7 +50,7 @@ export class GameSocketService implements OnDestroy {
     ConnectionStatus.Disconnected
   );
   private errorSubject = new BehaviorSubject<string | null>(null);
-  private myPlayerSymbolSubject = new BehaviorSubject<"X" | "O" | null>(null);
+  public myPlayerSymbolSubject = new BehaviorSubject<"X" | "O" | null>(null);
   private opponentConnectedSubject = new BehaviorSubject<boolean>(false);
 
   public gameState$ = this.gameStateSubject.asObservable();
