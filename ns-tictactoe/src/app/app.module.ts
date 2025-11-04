@@ -10,13 +10,15 @@ import { HttpClientModule } from "@angular/common/http";
 import { AuthModule } from "./auth/auth.module";
 import { SignInComponent } from "./auth/sign-in/sign-in.component";
 import { ConfettiComponent } from "./game/confetti.component";
+import { GameHeaderComponent } from "./game/game-header.component";
+
 
 
 
 @NgModule({
   bootstrap: [AppComponent],
   imports: [NativeScriptModule, AppRoutingModule, NativeScriptFormsModule, HttpClientModule, AuthModule],
-  declarations: [AppComponent, GameComponent, ConfettiComponent],
+  declarations: [AppComponent, GameComponent, ConfettiComponent, GameHeaderComponent],
    providers: [
     Page // ✅ Add this line
   ],
