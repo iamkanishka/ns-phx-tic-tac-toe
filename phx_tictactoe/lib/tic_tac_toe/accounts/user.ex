@@ -23,6 +23,10 @@ defmodule TicTacToe.Accounts.User do
     timestamps()
   end
 
+  @doc """
+  Changeset for a user.
+  Ensures uniqueness of Google `sub` and `email`.
+  """
   def changeset(user, attrs) do
     user
     |> cast(attrs, [
@@ -35,7 +39,7 @@ defmodule TicTacToe.Accounts.User do
       :email_verified
     ])
     |> validate_required([:sub, :name, :email])
-    |> unique_constraint(:sub)
-    |> unique_constraint(:email)
+    |> unique_constraint(:sub, name: :users_sub_index)
+    |> unique_constraint(:email, name: :users_email_index)
   end
 end
