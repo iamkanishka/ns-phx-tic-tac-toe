@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "cnr": "ns clean && ns run android"
+    "cnr": "ns clean && ns run android --env.forceGC"
   },
   "dependencies": {
     "@angular/animations": "~18.0.0",
