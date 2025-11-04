@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from "@angular/core";
 import { BehaviorSubject, Observable, Subject } from "rxjs";
 import { SoundService, SoundType } from "./sound.service";
 import { HapticService, HapticIntensity } from "./haptics.service";
+import { GameSocketService } from "./game-socket.service";
 
 export enum Player {
   X = "X",
@@ -67,7 +68,8 @@ export class GameService implements OnDestroy {
 
   constructor(
     private soundService: SoundService,
-    private hapticService: HapticService
+    private hapticService: HapticService,
+    private gameSocketService: GameSocketService
   ) {}
 
   ngOnDestroy(): void {
@@ -132,7 +134,7 @@ export class GameService implements OnDestroy {
     if (winningLine) {
       newScores[board.currentPlayer]++;
       this.soundService.play(SoundType.Win, this.settings.soundVolume);
-      
+
       this.hapticService.trigger(HapticIntensity.Success);
     } else if (isDraw) {
       newScores.draws++;
@@ -276,42 +278,62 @@ export class GameService implements OnDestroy {
     return null;
   }
 
-  updateBoardFromServer(
-    cells: string[],
-    status: string,
-    winner: string | null,
-    winningLine: number[] | null,
-    currentPlayer: string
-  ): void {
-    let gameState: GameState;
+ updateBoardFromServer(
+  cells: string[],
+  status: string,
+  winner: string | null,
+  winningLine: number[] | null,
+  currentPlayer: string
+): void {
+  let gameState: GameState;
+  const mySymbol = this.gameSocketService.myPlayerSymbolSubject.getValue();
 
-    switch (status) {
-      case "won":
-        gameState = GameState.Won;
+  switch (status) {
+    case "won":
+      gameState = GameState.Won;
+
+      // ✅ Only the winner hears the Win sound
+      if (winner && mySymbol === winner) {
         this.soundService.play(SoundType.Win, this.settings.soundVolume);
-        break;
-      case "draw":
-        gameState = GameState.Draw;
-        this.soundService.play(SoundType.Draw, this.settings.soundVolume);
-        break;
-      default:
-        gameState = GameState.Playing;
-    }
+      }
+      break;
 
-    const currentBoard = this.gameBoard;
+    case "draw":
+      gameState = GameState.Draw;
+      this.soundService.play(SoundType.Draw, this.settings.soundVolume);
+      break;
 
-    this.boardSubject.next({
-      cells: cells,
-      state: gameState,
-      currentPlayer: currentPlayer === "X" ? Player.X : Player.O,
-      winner: winner ? (winner === "X" ? Player.X : Player.O) : null,
-      winningLine: winningLine,
-      scores: currentBoard.scores,
-    });
+    case "playing":
+      gameState = GameState.Playing;
+
+      // ✅ Play move sound only if the last move was made by *this* player
+      // The server usually sends `currentPlayer` as the one whose turn is NEXT
+      // So the one who just played is the *opposite* symbol.
+      const lastMover = currentPlayer === "X" ? "O" : "X";
+      if (mySymbol === lastMover) {
+        this.soundService.play(SoundType.Move, this.settings.soundVolume);
+      }
+      break;
+
+    default:
+      gameState = GameState.Playing;
   }
 
+  const currentBoard = this.gameBoard;
 
-  confettiCelebrate(): void {    
+  this.boardSubject.next({
+    cells,
+    state: gameState,
+    currentPlayer: currentPlayer === "X" ? Player.X : Player.O,
+    winner: winner ? (winner === "X" ? Player.X : Player.O) : null,
+    winningLine,
+    scores: currentBoard.scores,
+  });
+}
+
+ 
+
+  confettiCelebrate(): void {
     this.soundService.play(SoundType.Confetti, this.settings.soundVolume);
-   }
+  }
 }
