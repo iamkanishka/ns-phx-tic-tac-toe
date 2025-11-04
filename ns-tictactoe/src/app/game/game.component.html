@@ -86,679 +86,700 @@
 <!-- =========================
        MAIN SCROLLABLE CONTENT
        ========================= -->
-       <GridLayout rows="*"> 
-<ScrollView backgroundColor="#1C2526">
-  <StackLayout
-    padding="20"
-    horizontalAlignment="center"
-    verticalAlignment="top"
-    width="100%"
-  >
-    <!-- =========================
+<GridLayout rows="*">
+  <ScrollView backgroundColor="#1C2526">
+    <StackLayout
+      padding="20"
+      horizontalAlignment="center"
+      verticalAlignment="top"
+      width="100%"
+    >
+      <!-- =========================
            MODE SELECTION (Offline Mode)
            ========================= -->
-    <StackLayout
-      *ngIf="currentMode === GameMode.Offline && !showLobby"
-      horizontalAlignment="center"
-      padding="40 20"
-      width="100%"
-      verticalAlignment="top"
-    >
-      <Label
-        text="TIC TAC TOE"
-        color="#FFFFFF"
-        fontSize="30"
-        fontWeight="300"
-        horizontalAlignment="center"
-        marginBottom="10"
-      ></Label>
-
-       <StackLayout>
-        <Button text="🎉 Celebrate!" (tap)="celebrate()"></Button>
-      </StackLayout>
-
-      <Button
-        text="🌐 Play Online"
-        (tap)="switchToOnlineMode()"
-        backgroundColor="#FFFFFF"
-        color="#000000"
-        borderRadius="24"
-        width="220"
-        height="48"
-        elevation="4"
-        horizontalAlignment="center"
-        padding="10"
-        accessibilityLabel="Play online with friends"
-      ></Button>
-    </StackLayout>
-
-    <!-- =========================
-           ONLINE LOBBY
-           ========================= -->
-    <StackLayout
-      *ngIf="showLobby"
-      width="100%"
-      maxWidth="400"
-      horizontalAlignment="center"
-      padding="16"
-      verticalAlignment="top"
-    >
-      <Label
-        text="🌐 Online Multiplayer"
-        fontSize="28"
-        fontWeight="800"
-        color="#FFFFFF"
-        horizontalAlignment="center"
-        marginBottom="12"
-      ></Label>
-
-      <!-- CREATE GAME FORM -->
       <StackLayout
-        *ngIf="showCreateGame"
-        backgroundColor="rgba(255,255,255,0.15)"
-        borderRadius="16"
-        padding="24"
+        *ngIf="currentMode === GameMode.Offline && !showLobby"
+        horizontalAlignment="center"
+        padding="40 20"
         width="100%"
-        marginBottom="16"
         verticalAlignment="top"
       >
         <Label
-          text="Create New Game"
-          fontSize="20"
-          fontWeight="700"
+          text="TIC TAC TOE"
           color="#FFFFFF"
-          horizontalAlignment="center"
-          marginBottom="14"
-        ></Label>
-
-        <TextField
-          [(ngModel)]="playerName"
-          hint="Enter your name"
-          [keyboardType]="'text'"
-          returnKeyType="done"
-          autocorrect="false"
-          backgroundColor="#FFFFFF"
-          color="#222222"
-          fontSize="16"
-          padding="14 16"
-          borderRadius="8"
-          accessibilityLabel="Player name input"
-        />
-
-        <FlexboxLayout
-          flexDirection="row"
-          justifyContent="space-between"
-          marginTop="12"
-          width="100%"
-        >
-          <Button
-            text="Create Game"
-            (tap)="createOnlineGame()"
-            backgroundColor="#FF6B6B"
-            color="#FFFFFF"
-            borderRadius="12"
-            padding="12"
-            width="48%"
-            accessibilityLabel="Create game"
-          ></Button>
-          <Button
-            text="Cancel"
-            (tap)="cancelCreateGame()"
-            backgroundColor="rgba(255,255,255,0.12)"
-            color="#FFFFFF"
-            borderRadius="12"
-            padding="12"
-            width="48%"
-            accessibilityLabel="Cancel"
-          ></Button>
-        </FlexboxLayout>
-      </StackLayout>
-
-      <!-- JOIN GAME FORM -->
-      <StackLayout
-        *ngIf="showJoinGame"
-        backgroundColor="white"
-        borderRadius="16"
-        padding="24"
-        width="100%"
-        marginBottom="16"
-      >
-        <Label
-          text="Join Game"
-          fontSize="20"
-          fontWeight="700"
-          color="black"
-          horizontalAlignment="center"
-          marginBottom="14"
-        ></Label>
-
-        <TextField
-          [(ngModel)]="gameIdToJoin"
-          hint="Paste Game ID"
-          [keyboardType]="'text'"
-          returnKeyType="done"
-          autocorrect="false"
-          backgroundColor="#FFFFFF"
-          color="#222222"
-          fontSize="16"
-          padding="14 16"
-          borderRadius="8"
-          accessibilityLabel="Game ID input"
-        />
-
-        <FlexboxLayout
-          flexDirection="row"
-          justifyContent="space-between"
-          marginTop="12"
-          width="100%"
-        >
-          <Button
-            text="Join Game"
-            (tap)="joinGameById()"
-            backgroundColor="#4CAF50"
-            color="#FFFFFF"
-            borderRadius="12"
-            padding="12"
-            width="48%"
-            accessibilityLabel="Join game"
-          ></Button>
-          <Button
-            text="Cancel"
-            (tap)="cancelJoinGame()"
-            backgroundColor="white"
-            color="black"
-            borderRadius="12"
-            padding="12"
-            width="48%"
-            accessibilityLabel="Cancel"
-          ></Button>
-        </FlexboxLayout>
-      </StackLayout>
-
-      <!-- LOBBY ACTIONS -->
-      <StackLayout
-        *ngIf="!showCreateGame && !showJoinGame"
-        width="100%"
-        marginBottom="16"
-        horizontalAlignment="center"
-        spacing="12"
-      >
-        <Button
-          text="🎮  Start New Game"
-          (tap)="createOnlineGame()"
-          backgroundColor="#FF6B6B"
-          color="#FFFFFF"
-          borderRadius="24"
-          width="220"
-          height="48"
-          horizontalAlignment="center"
-          padding="10"
-          accessibilityLabel="Create new game"
-        ></Button>
-
-        <Button
-          text="📋 Join by Game ID"
-          (tap)="showJoinGameForm()"
-          backgroundColor="rgba(255,255,255,0.12)"
-          color="#FFFFFF"
-          borderRadius="24"
-          width="220"
-          height="48"
-          horizontalAlignment="center"
-          padding="10"
-          accessibilityLabel="Join game by ID"
-        ></Button>
-      </StackLayout>
-
-      <!-- WAITING GAMES LIST -->
-      <StackLayout
-        *ngIf="!showCreateGame && !showJoinGame"
-        width="100%"
-        backgroundColor="rgba(255,255,255,0.12)"
-        padding="18"
-        height="400"
-        borderRadius="16"
-        marginBottom="12"
-      >
-        <Label
-          text="Available Games"
-          color="#FFFFFF"
-          fontSize="18"
-          fontWeight="700"
+          fontSize="30"
+          fontWeight="300"
           horizontalAlignment="center"
           marginBottom="10"
         ></Label>
 
-        <ActivityIndicator
-          *ngIf="isLoadingGames"
-          busy="true"
-          width="40"
-          height="40"
+        <StackLayout>
+          <Button text="🎉 Celebrate!" (tap)="celebrate()"></Button>
+        </StackLayout>
+
+        <Button
+          text="🌐 Play Online"
+          (tap)="switchToOnlineMode()"
+          backgroundColor="#FFFFFF"
+          color="#000000"
+          borderRadius="24"
+          width="220"
+          height="48"
+          elevation="4"
+          horizontalAlignment="center"
+          padding="10"
+          accessibilityLabel="Play online with friends"
+        ></Button>
+      </StackLayout>
+
+      <!-- =========================
+           ONLINE LOBBY
+           ========================= -->
+      <StackLayout
+        *ngIf="showLobby"
+        width="100%"
+        maxWidth="400"
+        horizontalAlignment="center"
+        padding="16"
+        verticalAlignment="top"
+      >
+        <Label
+          text="🌐 Online Multiplayer"
+          fontSize="28"
+          fontWeight="800"
+          color="#FFFFFF"
           horizontalAlignment="center"
           marginBottom="12"
-        />
+        ></Label>
 
-        <ListView
-          *ngIf="!isLoadingGames && waitingGames.length > 0"
-          [items]="waitingGames"
-          height="400"
-          separatorColor="#222222"
-          backgroundColor="transparent"
-        >
-          <ng-template let-game="item">
-            <GridLayout
-              columns="*, auto"
-              padding="12"
-              rows="auto"
-              backgroundColor="#111111"
-              borderRadius="8"
-              marginBottom="8"
-            >
-              <StackLayout col="0" verticalAlignment="center">
-                <Label
-                  [text]="game.player_x_name"
-                  color="#FFFFFF"
-                  fontSize="15"
-                  fontWeight="700"
-                ></Label>
-                <Label
-                  text="Waiting for opponent..."
-                  color="rgba(255,255,255,0.75)"
-                  fontSize="12"
-                  fontStyle="italic"
-                ></Label>
-              </StackLayout>
-
-              <Button
-                text="Join"
-                col="1"
-                backgroundColor="#4CAF50"
-                color="#FFFFFF"
-                borderRadius="12"
-                padding="8"
-                width="90"
-                verticalAlignment="center"
-                (tap)="joinOnlineGame(game.id)"
-                accessibilityLabel="Join this game"
-              ></Button>
-            </GridLayout>
-          </ng-template>
-        </ListView>
-
+        <!-- CREATE GAME FORM -->
         <StackLayout
-          *ngIf="!isLoadingGames && waitingGames.length === 0"
-          horizontalAlignment="center"
-          padding="20"
+          *ngIf="showCreateGame"
+          backgroundColor="rgba(255,255,255,0.15)"
+          borderRadius="16"
+          padding="24"
+          width="100%"
+          marginBottom="16"
+          verticalAlignment="top"
         >
-          <Label text="🎮" fontSize="46" marginBottom="10"></Label>
           <Label
-            text="No games available"
-            fontSize="16"
+            text="Create New Game"
+            fontSize="20"
             fontWeight="700"
-            color="rgba(255,255,255,0.92)"
+            color="#FFFFFF"
+            horizontalAlignment="center"
+            marginBottom="14"
           ></Label>
+
+          <TextField
+            [(ngModel)]="playerName"
+            hint="Enter your name"
+            [keyboardType]="'text'"
+            returnKeyType="done"
+            autocorrect="false"
+            backgroundColor="#FFFFFF"
+            color="#222222"
+            fontSize="16"
+            padding="14 16"
+            borderRadius="8"
+            accessibilityLabel="Player name input"
+          />
+
+          <FlexboxLayout
+            flexDirection="row"
+            justifyContent="space-between"
+            marginTop="12"
+            width="100%"
+          >
+            <Button
+              text="Create Game"
+              (tap)="createOnlineGame()"
+              backgroundColor="#FF6B6B"
+              color="#FFFFFF"
+              borderRadius="12"
+              padding="12"
+              width="48%"
+              accessibilityLabel="Create game"
+            ></Button>
+            <Button
+              text="Cancel"
+              (tap)="cancelCreateGame()"
+              backgroundColor="rgba(255,255,255,0.12)"
+              color="#FFFFFF"
+              borderRadius="12"
+              padding="12"
+              width="48%"
+              accessibilityLabel="Cancel"
+            ></Button>
+          </FlexboxLayout>
+        </StackLayout>
+
+        <!-- JOIN GAME FORM -->
+        <StackLayout
+          *ngIf="showJoinGame"
+          backgroundColor="white"
+          borderRadius="16"
+          padding="24"
+          width="100%"
+          marginBottom="16"
+        >
           <Label
-            text="Create a new game to get started!"
-            fontSize="14"
-            color="rgba(255,255,255,0.7)"
-            marginTop="6"
+            text="Join Game"
+            fontSize="20"
+            fontWeight="700"
+            color="black"
+            horizontalAlignment="center"
+            marginBottom="14"
           ></Label>
+
+          <TextField
+            [(ngModel)]="gameIdToJoin"
+            hint="Paste Game ID"
+            [keyboardType]="'text'"
+            returnKeyType="done"
+            autocorrect="false"
+            backgroundColor="#FFFFFF"
+            color="#222222"
+            fontSize="16"
+            padding="14 16"
+            borderRadius="8"
+            accessibilityLabel="Game ID input"
+          />
+
+          <FlexboxLayout
+            flexDirection="row"
+            justifyContent="space-between"
+            marginTop="12"
+            width="100%"
+          >
+            <Button
+              text="Join Game"
+              (tap)="joinGameById()"
+              backgroundColor="#4CAF50"
+              color="#FFFFFF"
+              borderRadius="12"
+              padding="12"
+              width="48%"
+              accessibilityLabel="Join game"
+            ></Button>
+            <Button
+              text="Cancel"
+              (tap)="cancelJoinGame()"
+              backgroundColor="white"
+              color="black"
+              borderRadius="12"
+              padding="12"
+              width="48%"
+              accessibilityLabel="Cancel"
+            ></Button>
+          </FlexboxLayout>
+        </StackLayout>
+
+        <!-- LOBBY ACTIONS -->
+        <StackLayout
+          *ngIf="!showCreateGame && !showJoinGame"
+          width="100%"
+          marginBottom="16"
+          horizontalAlignment="center"
+          spacing="12"
+        >
+          <Button
+            text="🎮  Start New Game"
+            (tap)="createOnlineGame()"
+            backgroundColor="#FF6B6B"
+            color="#FFFFFF"
+            borderRadius="24"
+            width="220"
+            height="48"
+            horizontalAlignment="center"
+            padding="10"
+            accessibilityLabel="Create new game"
+          ></Button>
+
+          <Button
+            text="📋 Join by Game ID"
+            (tap)="showJoinGameForm()"
+            backgroundColor="rgba(255,255,255,0.12)"
+            color="#FFFFFF"
+            borderRadius="24"
+            width="220"
+            height="48"
+            horizontalAlignment="center"
+            padding="10"
+            accessibilityLabel="Join game by ID"
+          ></Button>
+        </StackLayout>
+
+        <!-- WAITING GAMES LIST -->
+        <StackLayout
+          *ngIf="!showCreateGame && !showJoinGame"
+          width="100%"
+          backgroundColor="rgba(255,255,255,0.12)"
+          padding="18"
+          height="400"
+          borderRadius="16"
+          marginBottom="12"
+        >
+          <Label
+            text="Available Games"
+            color="#FFFFFF"
+            fontSize="18"
+            fontWeight="700"
+            horizontalAlignment="center"
+            marginBottom="10"
+          ></Label>
+
+          <ActivityIndicator
+            *ngIf="isLoadingGames"
+            busy="true"
+            width="40"
+            height="40"
+            horizontalAlignment="center"
+            marginBottom="12"
+          />
+
+          <ListView
+            *ngIf="!isLoadingGames && waitingGames.length > 0"
+            [items]="waitingGames"
+            height="400"
+            separatorColor="#222222"
+            backgroundColor="transparent"
+          >
+            <ng-template let-game="item">
+              <GridLayout
+                columns="*, auto"
+                padding="12"
+                rows="auto"
+                backgroundColor="#111111"
+                borderRadius="8"
+                marginBottom="8"
+              >
+                <StackLayout col="0" verticalAlignment="center">
+                  <Label
+                    [text]="game.player_x_name"
+                    color="#FFFFFF"
+                    fontSize="15"
+                    fontWeight="700"
+                  ></Label>
+                  <Label
+                    text="Waiting for opponent..."
+                    color="rgba(255,255,255,0.75)"
+                    fontSize="12"
+                    fontStyle="italic"
+                  ></Label>
+                </StackLayout>
+
+                <Button
+                  text="Join"
+                  col="1"
+                  backgroundColor="#4CAF50"
+                  color="#FFFFFF"
+                  borderRadius="12"
+                  padding="8"
+                  width="90"
+                  verticalAlignment="center"
+                  (tap)="joinOnlineGame(game.id)"
+                  accessibilityLabel="Join this game"
+                ></Button>
+              </GridLayout>
+            </ng-template>
+          </ListView>
+
+          <StackLayout
+            *ngIf="!isLoadingGames && waitingGames.length === 0"
+            horizontalAlignment="center"
+            padding="20"
+          >
+            <Label text="🎮" fontSize="46" marginBottom="10"></Label>
+            <Label
+              text="No games available"
+              fontSize="16"
+              fontWeight="700"
+              color="rgba(255,255,255,0.92)"
+            ></Label>
+            <Label
+              text="Create a new game to get started!"
+              fontSize="14"
+              color="rgba(255,255,255,0.7)"
+              marginTop="6"
+            ></Label>
+          </StackLayout>
         </StackLayout>
       </StackLayout>
-    </StackLayout>
 
-    <!-- =========================
+      <!-- =========================
            GAME BOARD (Offline & Online)
            ========================= -->
-    <StackLayout
-      *ngIf="!showLobby"
-      width="100%"
-      horizontalAlignment="center"
-      paddingBottom="24"
-    >
-      <!-- MODE INDICATOR -->
-      <GridLayout
-        columns="auto, *, auto"
+      <StackLayout
+        *ngIf="!showLobby"
         width="100%"
-        padding="12"
-        backgroundColor="rgba(255,255,255,0.12)"
-        borderRadius="12"
-        marginBottom="12"
+        horizontalAlignment="center"
+        paddingBottom="24"
       >
-        <Label
-          col="0"
-          [text]="currentMode === GameMode.Online ? '🌐 Online' : '🎮 Offline'"
-          color="#FFFFFF"
-          fontSize="14"
-          fontWeight="700"
-          padding="6 12"
+        <!-- MODE INDICATOR -->
+        <GridLayout
+          columns="auto, *, auto"
+          width="100%"
+          padding="12"
           backgroundColor="rgba(255,255,255,0.12)"
           borderRadius="12"
-          verticalAlignment="center"
-        ></Label>
-
-        <Label
-          col="2"
-          *ngIf="currentMode === GameMode.Online"
-          [text]="getConnectionStatusText()"
-          color="#FFFFFF"
-          fontSize="12"
-          fontWeight="600"
-          padding="6 12"
-          borderRadius="12"
-          verticalAlignment="center"
-          backgroundColor="{{
-            getConnectionStatusClass() === 'status-connected'
-              ? 'rgba(76,175,80,0.18)'
-              : getConnectionStatusClass() === 'status-connecting'
-              ? 'rgba(255,152,0,0.18)'
-              : getConnectionStatusClass() === 'status-error'
-              ? 'rgba(244,67,54,0.18)'
-              : 'rgba(158,158,158,0.18)'
-          }}"
-        ></Label>
-      </GridLayout>
-
-      <!-- GAME ID DISPLAY when created and opponent not connected -->
-      <StackLayout
-        *ngIf="
-          currentMode === GameMode.Online && currentGameId && !opponentConnected
-        "
-        width="100%"
-        backgroundLinearGradient="linear-gradient(#FFF0B8, #FFE0A0)"
-        borderRadius="16"
-        padding="18"
-        marginBottom="12"
-        borderWidth="2"
-        borderColor="#FFD700"
-      >
-        <Label
-          text="Share this Game ID with your friend:"
-          color="#FFFFFF"
-          fontSize="14"
-          horizontalAlignment="center"
-          marginBottom="8"
-        ></Label>
-        <GridLayout
-          columns="*, auto, auto"
-          width="100%"
-          backgroundColor="#FFFFFF"
-          borderRadius="8"
-          padding="10"
+          marginBottom="12"
         >
           <Label
             col="0"
-            [text]="currentGameId"
-            color="#222222"
-            fontSize="16"
-            verticalAlignment="center"
-            textWrap="false"
-          ></Label>
-          <Button
-            col="1"
-            text="📋"
-            width="40"
-            height="40"
-            borderRadius="8"
-            backgroundColor="#667eea"
-            color="#FFFFFF"
-            marginLeft="6"
-            (tap)="copyGameId()"
-            accessibilityLabel="Copy game ID to clipboard"
-          ></Button>
-          <Button
-            col="2"
-            text="📤"
-            width="40"
-            height="40"
-            borderRadius="8"
-            backgroundColor="#667eea"
-            color="#FFFFFF"
-            marginLeft="6"
-            (tap)="shareGameId()"
-            accessibilityLabel="Share game ID"
-          ></Button>
-        </GridLayout>
-        <Label
-          text="Waiting for opponent to join..."
-          color="rgba(255,255,255,0.9)"
-          fontSize="13"
-          horizontalAlignment="center"
-          marginTop="10"
-          fontStyle="italic"
-        ></Label>
-      </StackLayout>
-
-      <!-- SCORE BOARD (Offline) -->
-      <GridLayout
-        *ngIf="currentMode === GameMode.Offline"
-        columns="*,*,*"
-        width="100%"
-        maxWidth="340"
-        backgroundColor="rgba(255,255,255,0.18)"
-        borderRadius="16"
-        padding="16"
-        marginBottom="12"
-        horizontalAlignment="center"
-      >
-        <StackLayout col="0" horizontalAlignment="center" padding="8">
-          <Label
-            text="X"
-            fontSize="13"
-            fontWeight="600"
-            color="#FF4081"
-          ></Label>
-          <Label
-            [text]="gameService.scores.X"
-            fontSize="28"
-            fontWeight="800"
-            color="#FFFFFF"
-          ></Label>
-          <Label
-            *ngIf="xWinRate > 0"
-            [text]="xWinRate + '%'"
-            fontSize="11"
-            color="rgba(255,255,255,0.85)"
-            backgroundColor="rgba(255,255,255,0.15)"
-            padding="3 8"
-            borderRadius="10"
-          ></Label>
-        </StackLayout>
-        <StackLayout col="1" horizontalAlignment="center" padding="8">
-          <Label
-            text="Draws"
-            fontSize="13"
-            fontWeight="600"
-            color="#FFA500"
-          ></Label>
-          <Label
-            [text]="gameService.scores.draws"
-            fontSize="28"
-            fontWeight="800"
-            color="#FFFFFF"
-          ></Label>
-          <Label
-            *ngIf="drawRate > 0"
-            [text]="drawRate + '%'"
-            fontSize="11"
-            color="rgba(255,255,255,0.85)"
-            backgroundColor="rgba(255,255,255,0.15)"
-            padding="3 8"
-            borderRadius="10"
-          ></Label>
-        </StackLayout>
-        <StackLayout col="2" horizontalAlignment="center" padding="8">
-          <Label
-            text="O"
-            fontSize="13"
-            fontWeight="600"
-            color="#40C4FF"
-          ></Label>
-          <Label
-            [text]="gameService.scores.O"
-            fontSize="28"
-            fontWeight="800"
-            color="#FFFFFF"
-          ></Label>
-          <Label
-            *ngIf="oWinRate > 0"
-            [text]="oWinRate + '%'"
-            fontSize="11"
-            color="rgba(255,255,255,0.85)"
-            backgroundColor="rgba(255,255,255,0.15)"
-            padding="3 8"
-            borderRadius="10"
-          ></Label>
-        </StackLayout>
-      </GridLayout>
-
-      <!-- PLAYERS INFO (Online) -->
-      <GridLayout
-        *ngIf="currentMode === GameMode.Online && opponentConnected"
-        columns="*, *"
-        width="100%"
-        backgroundColor="rgba(255,255,255,0.12)"
-        borderRadius="16"
-        padding="12"
-        marginBottom="12"
-      >
-        <StackLayout
-          col="0"
-          horizontalAlignment="center"
-          padding="12"
-          backgroundColor="{{
-            mySymbol === 'X' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'
-          }}"
-          borderRadius="12"
-        >
-          <Label
-            text="YOU"
-            fontSize="11"
-            fontWeight="700"
-            color="rgba(255,255,255,0.85)"
-          ></Label>
-          <Label
-            [text]="mySymbol"
-            fontSize="36"
-            fontWeight="900"
-            color="#FF4081"
-          ></Label>
-        </StackLayout>
-
-        <StackLayout
-          col="1"
-          horizontalAlignment="center"
-          padding="12"
-          backgroundColor="{{
-            mySymbol === 'O' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)'
-          }}"
-          borderRadius="12"
-        >
-          <Label
-            text="OPPONENT"
-            fontSize="11"
-            fontWeight="700"
-            color="rgba(255,255,255,0.85)"
-          ></Label>
-          <Label
-            [text]="mySymbol === 'X' ? 'O' : 'X'"
-            fontSize="36"
-            fontWeight="900"
-            color="#40C4FF"
-          ></Label>
-        </StackLayout>
-      </GridLayout>
-
-      <!-- HINT BUTTON (Offline) -->
-      <Button
-        *ngIf="
-          currentMode === GameMode.Offline &&
-          settings.showHints &&
-          gameService.gameState === GameState.Playing
-        "
-        text="💡 Show Hint"
-        (tap)="showHintMove()"
-        backgroundColor="#FFD700"
-        color="#000000"
-        borderRadius="16"
-        padding="12"
-        width="220"
-        horizontalAlignment="center"
-        marginBottom="8"
-        [isEnabled]="!isAnimating && !showHint"
-        accessibilityLabel="Show hint for best move"
-      ></Button>
-
-      <Label
-        *ngIf="showHint && suggestedMove !== null"
-        text="👇 Tap the highlighted cell for the best move!"
-        color="#FFD700"
-        fontSize="14"
-        horizontalAlignment="center"
-        marginBottom="12"
-      ></Label>
-
-      <!-- GAME BOARD GRID (3x3) -->
-      <GridLayout
-        rows="*,*,*"
-        columns="*,*,*"
-        width="320"
-        height="320"
-        backgroundColor="#E6E6E6"
-        borderRadius="16"
-        padding="12"
-        marginBottom="12"
-        horizontalAlignment="center"
-        verticalAlignment="middle"
-        rowSpacing="6"
-        columnSpacing="6"
-      >
-        <!-- cellPositions array expected in component -->
-        <ng-container *ngFor="let position of cellPositions">
-          <StackLayout
-            row="{{ position.row }}"
-            col="{{ position.col }}"
-            margin="5"
-            #cellView
-            backgroundColor="{{
-              gameService.cells[position.index] !== '-'
-                ? gameService.cells[position.index] === 'X'
-                  ? 'rgba(233,30,99,0.12)'
-                  : 'rgba(33,150,243,0.12)'
-                : '#FFFFFF'
-            }}"
-            borderRadius="12"
-            width="92"
-            height="92"
-            verticalAlignment="center"
-            horizontalAlignment="center"
-            (tap)="
-              makeMove(position.index, cellView);
-              registerCell(position.index, cellView)
+            [text]="
+              currentMode === GameMode.Online ? '🌐 Online' : '🎮 Offline'
             "
-            accessibilityRole="button"
-            accessibilityLabel="{{ getCellAriaLabel(position.index) }}"
+            color="#FFFFFF"
+            fontSize="14"
+            fontWeight="700"
+            padding="6 12"
+            backgroundColor="rgba(255,255,255,0.12)"
+            borderRadius="12"
+            verticalAlignment="center"
+          ></Label>
+
+          <Label
+            col="2"
+            *ngIf="currentMode === GameMode.Online"
+            [text]="getConnectionStatusText()"
+            color="#FFFFFF"
+            fontSize="12"
+            fontWeight="600"
+            padding="6 12"
+            borderRadius="12"
+            verticalAlignment="center"
+            backgroundColor="{{
+              getConnectionStatusClass() === 'status-connected'
+                ? 'rgba(76,175,80,0.18)'
+                : getConnectionStatusClass() === 'status-connecting'
+                ? 'rgba(255,152,0,0.18)'
+                : getConnectionStatusClass() === 'status-error'
+                ? 'rgba(244,67,54,0.18)'
+                : 'rgba(158,158,158,0.18)'
+            }}"
+          ></Label>
+        </GridLayout>
+
+        <!-- GAME ID DISPLAY when created and opponent not connected -->
+        <StackLayout
+          *ngIf="
+            currentMode === GameMode.Online &&
+            currentGameId &&
+            !opponentConnected
+          "
+          width="100%"
+          backgroundLinearGradient="linear-gradient(#FFF0B8, #FFE0A0)"
+          borderRadius="16"
+          padding="18"
+          marginBottom="12"
+          borderWidth="2"
+          borderColor="#FFD700"
+        >
+          <Label
+            text="Share this Game ID with your friend:"
+            color="#FFFFFF"
+            fontSize="14"
+            horizontalAlignment="center"
+            marginBottom="8"
+          ></Label>
+          <GridLayout
+            columns="*, auto, auto"
+            width="100%"
+            backgroundColor="#FFFFFF"
+            borderRadius="8"
+            padding="10"
           >
             <Label
-              [text]="
-                gameService.cells[position.index] !== '-'
-                  ? gameService.cells[position.index]
-                  : ''
-              "
-              fontSize="50"
-              fontWeight="800"
-              color="{{
-                gameService.cells[position.index] === 'X'
-                  ? '#E91E63'
-                  : gameService.cells[position.index] === 'O'
-                  ? '#2196F3'
-                  : '#222222'
-              }}"
-              verticalAlignment="middle"
-              horizontalAlignment="center"
+              col="0"
+              [text]="currentGameId"
+              color="#222222"
+              fontSize="16"
+              verticalAlignment="center"
+              textWrap="false"
             ></Label>
+            <Button
+              col="1"
+              text="📋"
+              width="40"
+              height="40"
+              borderRadius="8"
+              backgroundColor="#667eea"
+              color="#FFFFFF"
+              marginLeft="6"
+              (tap)="copyGameId()"
+              accessibilityLabel="Copy game ID to clipboard"
+            ></Button>
+            <Button
+              col="2"
+              text="📤"
+              width="40"
+              height="40"
+              borderRadius="8"
+              backgroundColor="#667eea"
+              color="#FFFFFF"
+              marginLeft="6"
+              (tap)="shareGameId()"
+              accessibilityLabel="Share game ID"
+            ></Button>
+          </GridLayout>
+          <Label
+            text="Waiting for opponent to join..."
+            color="rgba(255,255,255,0.9)"
+            fontSize="13"
+            horizontalAlignment="center"
+            marginTop="10"
+            fontStyle="italic"
+          ></Label>
+        </StackLayout>
 
-            <!-- Ghost / hover effect for available cell 
+        <!-- Header
+        <Label
+          [text]="getStatusSubtitle()"
+          class="status-subtitle"
+          [accessibilityLabel]="getStatusSubtitle()"
+        ></Label>
+    
+      -->
+
+        <!-- SCORE BOARD (Offline) -->
+        <GridLayout
+          *ngIf="currentMode === GameMode.Offline"
+          columns="*,*,*"
+          width="100%"
+          maxWidth="340"
+          backgroundColor="rgba(255,255,255,0.18)"
+          borderRadius="16"
+          padding="16"
+          marginBottom="12"
+          horizontalAlignment="center"
+        >
+          <StackLayout col="0" horizontalAlignment="center" padding="8">
+            <Label
+              text="X"
+              fontSize="13"
+              fontWeight="600"
+              color="#FF4081"
+            ></Label>
+            <Label
+              [text]="gameService.scores.X"
+              fontSize="28"
+              fontWeight="800"
+              color="#FFFFFF"
+            ></Label>
+            <Label
+              *ngIf="xWinRate > 0"
+              [text]="xWinRate + '%'"
+              fontSize="11"
+              color="rgba(255,255,255,0.85)"
+              backgroundColor="rgba(255,255,255,0.15)"
+              padding="3 8"
+              borderRadius="10"
+            ></Label>
+          </StackLayout>
+          <StackLayout col="1" horizontalAlignment="center" padding="8">
+            <Label
+              text="Draws"
+              fontSize="13"
+              fontWeight="600"
+              color="#FFA500"
+            ></Label>
+            <Label
+              [text]="gameService.scores.draws"
+              fontSize="28"
+              fontWeight="800"
+              color="#FFFFFF"
+            ></Label>
+            <Label
+              *ngIf="drawRate > 0"
+              [text]="drawRate + '%'"
+              fontSize="11"
+              color="rgba(255,255,255,0.85)"
+              backgroundColor="rgba(255,255,255,0.15)"
+              padding="3 8"
+              borderRadius="10"
+            ></Label>
+          </StackLayout>
+          <StackLayout col="2" horizontalAlignment="center" padding="8">
+            <Label
+              text="O"
+              fontSize="13"
+              fontWeight="600"
+              color="#40C4FF"
+            ></Label>
+            <Label
+              [text]="gameService.scores.O"
+              fontSize="28"
+              fontWeight="800"
+              color="#FFFFFF"
+            ></Label>
+            <Label
+              *ngIf="oWinRate > 0"
+              [text]="oWinRate + '%'"
+              fontSize="11"
+              color="rgba(255,255,255,0.85)"
+              backgroundColor="rgba(255,255,255,0.15)"
+              padding="3 8"
+              borderRadius="10"
+            ></Label>
+          </StackLayout>
+        </GridLayout>
+
+        <!-- PLAYERS INFO (Online) -->
+        <GridLayout
+          *ngIf="currentMode === GameMode.Online && opponentConnected"
+          columns="*, *"
+          width="100%"
+          backgroundColor="rgba(255,255,255,0.12)"
+          borderRadius="16"
+          padding="12"
+          marginBottom="12"
+        >
+          <StackLayout
+            col="0"
+            horizontalAlignment="center"
+            padding="12"
+            backgroundColor="{{
+              mySymbol === 'X'
+                ? 'rgba(255,255,255,0.2)'
+                : 'rgba(255,255,255,0.1)'
+            }}"
+            borderRadius="12"
+          >
+            <Label
+              text="YOU"
+              fontSize="11"
+              fontWeight="700"
+              color="rgba(255,255,255,0.85)"
+            ></Label>
+            <Label
+              [text]="mySymbol"
+              fontSize="36"
+              fontWeight="900"
+              color="#FF4081"
+            ></Label>
+          </StackLayout>
+
+          <StackLayout
+            col="1"
+            horizontalAlignment="center"
+            padding="12"
+            backgroundColor="{{
+              mySymbol === 'O'
+                ? 'rgba(255,255,255,0.2)'
+                : 'rgba(255,255,255,0.1)'
+            }}"
+            borderRadius="12"
+          >
+            <Label
+              text="OPPONENT"
+              fontSize="11"
+              fontWeight="700"
+              color="rgba(255,255,255,0.85)"
+            ></Label>
+            <Label
+              [text]="mySymbol === 'X' ? 'O' : 'X'"
+              fontSize="36"
+              fontWeight="900"
+              color="#40C4FF"
+            ></Label>
+          </StackLayout>
+        </GridLayout>
+
+         <!-- 
+       <game-header></game-header>
+        -->
+
+        <!-- HINT BUTTON (Offline) -->
+        <Button
+          *ngIf="
+            currentMode === GameMode.Offline &&
+            settings.showHints &&
+            gameService.gameState === GameState.Playing
+          "
+          text="💡 Show Hint"
+          (tap)="showHintMove()"
+          backgroundColor="#FFD700"
+          color="#000000"
+          borderRadius="16"
+          padding="12"
+          width="220"
+          horizontalAlignment="center"
+          marginBottom="8"
+          [isEnabled]="!isAnimating && !showHint"
+          accessibilityLabel="Show hint for best move"
+        ></Button>
+
+        <Label
+          *ngIf="showHint && suggestedMove !== null"
+          text="👇 Tap the highlighted cell for the best move!"
+          color="#FFD700"
+          fontSize="14"
+          horizontalAlignment="center"
+          marginBottom="12"
+        ></Label>
+
+        <!-- GAME BOARD GRID (3x3) -->
+        <GridLayout
+          rows="*,*,*"
+          columns="*,*,*"
+          width="320"
+          height="320"
+          backgroundColor="#E6E6E6"
+          borderRadius="16"
+          padding="12"
+          marginBottom="12"
+          horizontalAlignment="center"
+          verticalAlignment="middle"
+          rowSpacing="6"
+          columnSpacing="6"
+        >
+          <!-- cellPositions array expected in component -->
+          <ng-container *ngFor="let position of cellPositions">
+            <StackLayout
+              row="{{ position.row }}"
+              col="{{ position.col }}"
+              margin="5"
+              #cellView
+              backgroundColor="{{
+                gameService.cells[position.index] !== '-'
+                  ? gameService.cells[position.index] === 'X'
+                    ? 'rgba(233,30,99,0.12)'
+                    : 'rgba(33,150,243,0.12)'
+                  : '#FFFFFF'
+              }}"
+              borderRadius="12"
+              width="92"
+              height="92"
+              verticalAlignment="center"
+              horizontalAlignment="center"
+              (tap)="
+                makeMove(position.index, cellView);
+                registerCell(position.index, cellView)
+              "
+              accessibilityRole="button"
+              accessibilityLabel="{{ getCellAriaLabel(position.index) }}"
+            >
+              <Label
+                [text]="
+                  gameService.cells[position.index] !== '-'
+                    ? gameService.cells[position.index]
+                    : ''
+                "
+                fontSize="50"
+                fontWeight="800"
+                color="{{
+                  gameService.cells[position.index] === 'X'
+                    ? '#E91E63'
+                    : gameService.cells[position.index] === 'O'
+                    ? '#2196F3'
+                    : '#222222'
+                }}"
+                verticalAlignment="middle"
+                horizontalAlignment="center"
+              ></Label>
+
+              <!-- Ghost / hover effect for available cell 
             <GridLayout
               *ngIf="
                 !gameService.cells[position.index] &&
@@ -781,424 +802,424 @@
             </GridLayout>
             -->
 
-            <!-- Suggested move indicator -->
-          <Label
-  *ngIf="suggestedMove === position.index && showHint"
-  text="✨"
-  fontSize="28"
-  verticalAlignment="top"
-  horizontalAlignment="right"
-  marginTop="-14"
-  marginRight="-2"
-  opacity="1"
-  scaleX="1"
-  scaleY="1"
-></Label>
-
-          </StackLayout>
-        </ng-container>
-      </GridLayout>
-
-      <!-- ACTION BUTTONS -->
-      <FlexboxLayout
-        flexDirection="row"
-        justifyContent="space-between"
-        width="100%"
-        maxWidth="340"
-        marginBottom="12"
-        alignItems="center"
-      >
-        <Button
-          [text]="
-            currentMode === GameMode.Online ? '🚪 Leave Game' : '🔄 New Game'
-          "
-          (tap)="resetGame()"
-          backgroundColor="#FF6B6B"
-          color="#FFFFFF"
-          borderRadius="16"
-          padding="14"
-          width="48%"
-          isEnabled="{{ !isAnimating }}"
-        ></Button>
-
-        <Button
-          *ngIf="currentMode === GameMode.Offline"
-          text="📊 Reset Scores"
-          (tap)="resetScores()"
-          backgroundColor="rgba(255,255,255,0.22)"
-          color="#FFFFFF"
-          borderRadius="16"
-          padding="14"
-          width="48%"
-        ></Button>
-      </FlexboxLayout>
-
-      <!-- STATISTICS PANEL -->
-      <StackLayout
-        *ngIf="showStats"
-        width="100%"
-        maxWidth="340"
-        backgroundColor="rgba(255,255,255,0.18)"
-        borderRadius="16"
-        padding="22"
-        marginBottom="12"
-      >
-        <Label
-          text="📊 Game Statistics"
-          fontSize="20"
-          fontWeight="800"
-          color="#FFFFFF"
-          horizontalAlignment="center"
-          marginBottom="12"
-        ></Label>
-
-        <GridLayout rows="auto, auto" columns="*, *" width="100%">
-          <StackLayout row="0" col="0" padding="10">
-            <Label
-              text="Games Played"
-              fontSize="12"
-              color="rgba(255,255,255,0.85)"
-            ></Label>
-            <Label
-              [text]="gamesPlayed"
-              fontSize="30"
-              color="#FFFFFF"
-              fontWeight="800"
-            ></Label>
-          </StackLayout>
-          <StackLayout row="0" col="1" padding="10">
-            <Label
-              text="Current Streak"
-              fontSize="12"
-              color="rgba(255,255,255,0.85)"
-            ></Label>
-            <Label
-              [text]="currentStreak"
-              fontSize="30"
-              color="#FFD700"
-              fontWeight="800"
-            ></Label>
-          </StackLayout>
-
-          <StackLayout row="1" col="0" padding="10">
-            <Label
-              text="Longest Streak"
-              fontSize="12"
-              color="rgba(255,255,255,0.85)"
-            ></Label>
-            <Label
-              [text]="longestStreak"
-              fontSize="30"
-              color="#FFFFFF"
-              fontWeight="800"
-            ></Label>
-          </StackLayout>
-          <StackLayout row="1" col="1" padding="10">
-            <Label
-              text="X Win Rate"
-              fontSize="12"
-              color="rgba(255,255,255,0.85)"
-            ></Label>
-            <Label
-              [text]="xWinRate + '%'"
-              fontSize="30"
-              color="#FFFFFF"
-              fontWeight="800"
-            ></Label>
-          </StackLayout>
+              <!-- Suggested move indicator -->
+              <Label
+                *ngIf="suggestedMove === position.index && showHint"
+                text="✨"
+                fontSize="28"
+                verticalAlignment="top"
+                horizontalAlignment="right"
+                marginTop="-14"
+                marginRight="-2"
+                opacity="1"
+                scaleX="1"
+                scaleY="1"
+              ></Label>
+            </StackLayout>
+          </ng-container>
         </GridLayout>
 
-        <!-- Win Distribution Bars -->
-        <StackLayout marginTop="14">
+        <!-- ACTION BUTTONS -->
+        <FlexboxLayout
+          flexDirection="row"
+          justifyContent="space-between"
+          width="100%"
+          maxWidth="340"
+          marginBottom="12"
+          alignItems="center"
+        >
+          <Button
+            [text]="
+              currentMode === GameMode.Online ? '🚪 Leave Game' : '🔄 New Game'
+            "
+            (tap)="resetGame()"
+            backgroundColor="#FF6B6B"
+            color="#FFFFFF"
+            borderRadius="16"
+            padding="14"
+            width="48%"
+            isEnabled="{{ !isAnimating }}"
+          ></Button>
+
+          <Button
+            *ngIf="currentMode === GameMode.Offline"
+            text="📊 Reset Scores"
+            (tap)="resetScores()"
+            backgroundColor="rgba(255,255,255,0.22)"
+            color="#FFFFFF"
+            borderRadius="16"
+            padding="14"
+            width="48%"
+          ></Button>
+        </FlexboxLayout>
+
+        <!-- STATISTICS PANEL -->
+        <StackLayout
+          *ngIf="showStats"
+          width="100%"
+          maxWidth="340"
+          backgroundColor="rgba(255,255,255,0.18)"
+          borderRadius="16"
+          padding="22"
+          marginBottom="12"
+        >
           <Label
-            text="Win Distribution"
-            fontSize="14"
+            text="📊 Game Statistics"
+            fontSize="20"
+            fontWeight="800"
+            color="#FFFFFF"
+            horizontalAlignment="center"
+            marginBottom="12"
+          ></Label>
+
+          <GridLayout rows="auto, auto" columns="*, *" width="100%">
+            <StackLayout row="0" col="0" padding="10">
+              <Label
+                text="Games Played"
+                fontSize="12"
+                color="rgba(255,255,255,0.85)"
+              ></Label>
+              <Label
+                [text]="gamesPlayed"
+                fontSize="30"
+                color="#FFFFFF"
+                fontWeight="800"
+              ></Label>
+            </StackLayout>
+            <StackLayout row="0" col="1" padding="10">
+              <Label
+                text="Current Streak"
+                fontSize="12"
+                color="rgba(255,255,255,0.85)"
+              ></Label>
+              <Label
+                [text]="currentStreak"
+                fontSize="30"
+                color="#FFD700"
+                fontWeight="800"
+              ></Label>
+            </StackLayout>
+
+            <StackLayout row="1" col="0" padding="10">
+              <Label
+                text="Longest Streak"
+                fontSize="12"
+                color="rgba(255,255,255,0.85)"
+              ></Label>
+              <Label
+                [text]="longestStreak"
+                fontSize="30"
+                color="#FFFFFF"
+                fontWeight="800"
+              ></Label>
+            </StackLayout>
+            <StackLayout row="1" col="1" padding="10">
+              <Label
+                text="X Win Rate"
+                fontSize="12"
+                color="rgba(255,255,255,0.85)"
+              ></Label>
+              <Label
+                [text]="xWinRate + '%'"
+                fontSize="30"
+                color="#FFFFFF"
+                fontWeight="800"
+              ></Label>
+            </StackLayout>
+          </GridLayout>
+
+          <!-- Win Distribution Bars -->
+          <StackLayout marginTop="14">
+            <Label
+              text="Win Distribution"
+              fontSize="14"
+              color="#FFFFFF"
+              horizontalAlignment="center"
+              marginBottom="8"
+            ></Label>
+            <StackLayout>
+              <GridLayout columns="60, *" marginBottom="8">
+                <Label
+                  col="0"
+                  text="X"
+                  color="#FF4081"
+                  fontSize="12"
+                  verticalAlignment="center"
+                ></Label>
+                <StackLayout
+                  col="1"
+                  backgroundColor="rgba(255,255,255,0.2)"
+                  borderRadius="5"
+                  height="10"
+                >
+                  <StackLayout
+                    width="{{ xWinRate + '%' }}"
+                    height="10"
+                    backgroundColor="#E91E63"
+                    borderRadius="5"
+                  ></StackLayout>
+                </StackLayout>
+              </GridLayout>
+
+              <GridLayout columns="60, *" marginBottom="8">
+                <Label
+                  col="0"
+                  text="Draws"
+                  color="#FFA500"
+                  fontSize="12"
+                  verticalAlignment="center"
+                ></Label>
+                <StackLayout
+                  col="1"
+                  backgroundColor="rgba(255,255,255,0.2)"
+                  borderRadius="5"
+                  height="10"
+                >
+                  <StackLayout
+                    width="{{ drawRate + '%' }}"
+                    height="10"
+                    backgroundColor="#FF9800"
+                    borderRadius="5"
+                  ></StackLayout>
+                </StackLayout>
+              </GridLayout>
+
+              <GridLayout columns="60, *">
+                <Label
+                  col="0"
+                  text="O"
+                  color="#40C4FF"
+                  fontSize="12"
+                  verticalAlignment="center"
+                ></Label>
+                <StackLayout
+                  col="1"
+                  backgroundColor="rgba(255,255,255,0.2)"
+                  borderRadius="5"
+                  height="10"
+                >
+                  <StackLayout
+                    width="{{ oWinRate + '%' }}"
+                    height="10"
+                    backgroundColor="#2196F3"
+                    borderRadius="5"
+                  ></StackLayout>
+                </StackLayout>
+              </GridLayout>
+            </StackLayout>
+          </StackLayout>
+        </StackLayout>
+
+        <!-- SETTINGS PANEL -->
+        <StackLayout
+          *ngIf="showSettings"
+          width="100%"
+          maxWidth="340"
+          backgroundColor="rgba(255,255,255,0.18)"
+          borderRadius="16"
+          padding="22"
+          marginBottom="12"
+        >
+          <Label
+            text="⚙️ Game Settings"
+            fontSize="20"
+            fontWeight="800"
+            color="#FFFFFF"
+            horizontalAlignment="center"
+            marginBottom="12"
+          ></Label>
+
+          <!-- Animation Speed - using SegmentedBar -->
+          <StackLayout marginBottom="12">
+            <Label text="Animation Speed" color="#FFFFFF" fontSize="14"></Label>
+            <SegmentedBar
+              [selectedIndex]="
+                settings.animationSpeed === 'fast'
+                  ? 0
+                  : settings.animationSpeed === 'normal'
+                  ? 1
+                  : 2
+              "
+              (selectedIndexChange)="onAnimationSpeedChange($event)"
+              backgroundColor="rgba(255,255,255,0.06)"
+              borderRadius="8"
+              height="36"
+              marginTop="8"
+            >
+              <SegmentedBarItem title="Fast"></SegmentedBarItem>
+              <SegmentedBarItem title="Normal"></SegmentedBarItem>
+              <SegmentedBarItem title="Slow"></SegmentedBarItem>
+            </SegmentedBar>
+          </StackLayout>
+
+          <!-- Sound Toggle -->
+          <GridLayout columns="*, auto" marginBottom="12">
+            <Label
+              col="0"
+              text="🔊 Sound Effects"
+              color="#FFFFFF"
+              verticalAlignment="center"
+            ></Label>
+            <Switch
+              col="1"
+              [checked]="settings.soundEnabled"
+              (checkedChange)="onSoundToggle($event)"
+            />
+          </GridLayout>
+
+          <StackLayout
+            *ngIf="settings.soundEnabled"
+            paddingLeft="6"
+            marginBottom="12"
+          >
+            <Label text="Volume" fontSize="12" color="#FFFFFF"></Label>
+            <Slider
+              value="{{ settings.soundVolume * 100 }}"
+              minValue="0"
+              maxValue="100"
+              (valueChange)="onVolumeChange($event)"
+              height="36"
+            />
+          </StackLayout>
+
+          <GridLayout columns="*, auto" marginBottom="12">
+            <Label
+              col="0"
+              text="📳 Haptic Feedback"
+              color="#FFFFFF"
+              verticalAlignment="center"
+            ></Label>
+            <Switch
+              col="1"
+              [checked]="settings.vibrationEnabled"
+              (checkedChange)="onHapticToggle($event)"
+            ></Switch>
+          </GridLayout>
+
+          <GridLayout
+            *ngIf="currentMode === GameMode.Offline"
+            columns="*, auto"
+            marginBottom="6"
+          >
+            <Label
+              col="0"
+              text="💡 Show Hints"
+              color="#FFFFFF"
+              verticalAlignment="center"
+            ></Label>
+            <Switch
+              col="1"
+              [checked]="settings.showHints"
+              (checkedChange)="onHintsToggle($event)"
+            ></Switch>
+          </GridLayout>
+
+          <Label
+            *ngIf="currentMode === GameMode.Offline && settings.showHints"
+            text="Hints will suggest the best move during gameplay"
+            color="rgba(255,255,255,0.75)"
+            fontSize="11"
+            marginTop="2"
+          ></Label>
+        </StackLayout>
+
+        <!-- INSTRUCTIONS -->
+        <StackLayout
+          *ngIf="
+            gameService.gameState === GameState.Playing &&
+            !showSettings &&
+            !showStats
+          "
+          width="100%"
+          maxWidth="340"
+          backgroundColor="rgba(255,255,255,0.15)"
+          borderRadius="16"
+          padding="18"
+          marginTop="8"
+          marginBottom="12"
+        >
+          <Label
+            text="How to Play"
+            fontSize="16"
+            fontWeight="800"
             color="#FFFFFF"
             horizontalAlignment="center"
             marginBottom="8"
           ></Label>
-          <StackLayout>
-            <GridLayout columns="60, *" marginBottom="8">
-              <Label
-                col="0"
-                text="X"
-                color="#FF4081"
-                fontSize="12"
-                verticalAlignment="center"
-              ></Label>
-              <StackLayout
-                col="1"
-                backgroundColor="rgba(255,255,255,0.2)"
-                borderRadius="5"
-                height="10"
-              >
-                <StackLayout
-                  width="{{ xWinRate + '%' }}"
-                  height="10"
-                  backgroundColor="#E91E63"
-                  borderRadius="5"
-                ></StackLayout>
-              </StackLayout>
-            </GridLayout>
-
-            <GridLayout columns="60, *" marginBottom="8">
-              <Label
-                col="0"
-                text="Draws"
-                color="#FFA500"
-                fontSize="12"
-                verticalAlignment="center"
-              ></Label>
-              <StackLayout
-                col="1"
-                backgroundColor="rgba(255,255,255,0.2)"
-                borderRadius="5"
-                height="10"
-              >
-                <StackLayout
-                  width="{{ drawRate + '%' }}"
-                  height="10"
-                  backgroundColor="#FF9800"
-                  borderRadius="5"
-                ></StackLayout>
-              </StackLayout>
-            </GridLayout>
-
-            <GridLayout columns="60, *">
-              <Label
-                col="0"
-                text="O"
-                color="#40C4FF"
-                fontSize="12"
-                verticalAlignment="center"
-              ></Label>
-              <StackLayout
-                col="1"
-                backgroundColor="rgba(255,255,255,0.2)"
-                borderRadius="5"
-                height="10"
-              >
-                <StackLayout
-                  width="{{ oWinRate + '%' }}"
-                  height="10"
-                  backgroundColor="#2196F3"
-                  borderRadius="5"
-                ></StackLayout>
-              </StackLayout>
-            </GridLayout>
-          </StackLayout>
-        </StackLayout>
-      </StackLayout>
-
-      <!-- SETTINGS PANEL -->
-      <StackLayout
-        *ngIf="showSettings"
-        width="100%"
-        maxWidth="340"
-        backgroundColor="rgba(255,255,255,0.18)"
-        borderRadius="16"
-        padding="22"
-        marginBottom="12"
-      >
-        <Label
-          text="⚙️ Game Settings"
-          fontSize="20"
-          fontWeight="800"
-          color="#FFFFFF"
-          horizontalAlignment="center"
-          marginBottom="12"
-        ></Label>
-
-        <!-- Animation Speed - using SegmentedBar -->
-        <StackLayout marginBottom="12">
-          <Label text="Animation Speed" color="#FFFFFF" fontSize="14"></Label>
-          <SegmentedBar
-            [selectedIndex]="
-              settings.animationSpeed === 'fast'
-                ? 0
-                : settings.animationSpeed === 'normal'
-                ? 1
-                : 2
-            "
-            (selectedIndexChange)="onAnimationSpeedChange($event)"
-            backgroundColor="rgba(255,255,255,0.06)"
-            borderRadius="8"
-            height="36"
-            marginTop="8"
-          >
-            <SegmentedBarItem title="Fast"></SegmentedBarItem>
-            <SegmentedBarItem title="Normal"></SegmentedBarItem>
-            <SegmentedBarItem title="Slow"></SegmentedBarItem>
-          </SegmentedBar>
-        </StackLayout>
-
-        <!-- Sound Toggle -->
-        <GridLayout columns="*, auto" marginBottom="12">
           <Label
-            col="0"
-            text="🔊 Sound Effects"
-            color="#FFFFFF"
-            verticalAlignment="center"
+            text="• Tap any empty cell to place your mark"
+            color="rgba(255,255,255,0.92)"
+            fontSize="13"
+            marginBottom="6"
           ></Label>
-          <Switch
-            col="1"
-            [checked]="settings.soundEnabled"
-            (checkedChange)="onSoundToggle($event)"
-          />
-        </GridLayout>
+          <Label
+            text="• Get three in a row to win (horizontal, vertical, or diagonal)"
+            color="rgba(255,255,255,0.92)"
+            fontSize="13"
+            marginBottom="6"
+          ></Label>
+          <Label
+            *ngIf="currentMode === GameMode.Online"
+            text="• Wait for your turn in online mode"
+            color="rgba(255,255,255,0.9)"
+            fontSize="13"
+            marginBottom="6"
+          ></Label>
+          <Label
+            *ngIf="currentMode === GameMode.Offline"
+            text="• Player X always starts first"
+            color="rgba(255,255,255,0.9)"
+            fontSize="13"
+            marginBottom="6"
+          ></Label>
+          <Label
+            *ngIf="currentMode === GameMode.Offline && settings.showHints"
+            text="• Use the hint button for strategy suggestions"
+            color="rgba(255,255,255,0.9)"
+            fontSize="13"
+            marginBottom="6"
+          ></Label>
+        </StackLayout>
 
+        <!-- ACHIEVEMENT BANNER -->
         <StackLayout
-          *ngIf="settings.soundEnabled"
-          paddingLeft="6"
-          marginBottom="12"
+          *ngIf="currentStreak >= 3 && currentMode === GameMode.Offline"
+          width="100%"
+          maxWidth="340"
+          borderRadius="20"
+          padding="18"
+          marginTop="12"
+          backgroundColor="#FF6B6B"
+          verticalAlignment="center"
+          horizontalAlignment="center"
         >
-          <Label text="Volume" fontSize="12" color="#FFFFFF"></Label>
-          <Slider
-            value="{{ settings.soundVolume * 100 }}"
-            minValue="0"
-            maxValue="100"
-            (valueChange)="onVolumeChange($event)"
-            height="36"
-          />
+          <Label
+            text="🔥 ON FIRE! 🔥"
+            fontSize="22"
+            fontWeight="900"
+            color="#FFFFFF"
+            horizontalAlignment="center"
+            marginBottom="6"
+          ></Label>
+          <Label
+            [text]="currentStreak + ' wins in a row!'"
+            fontSize="15"
+            fontWeight="700"
+            color="#FFFFFF"
+            horizontalAlignment="center"
+          ></Label>
         </StackLayout>
-
-        <GridLayout columns="*, auto" marginBottom="12">
-          <Label
-            col="0"
-            text="📳 Haptic Feedback"
-            color="#FFFFFF"
-            verticalAlignment="center"
-          ></Label>
-          <Switch
-            col="1"
-            [checked]="settings.vibrationEnabled"
-            (checkedChange)="onHapticToggle($event)"
-          ></Switch>
-        </GridLayout>
-
-        <GridLayout
-          *ngIf="currentMode === GameMode.Offline"
-          columns="*, auto"
-          marginBottom="6"
-        >
-          <Label
-            col="0"
-            text="💡 Show Hints"
-            color="#FFFFFF"
-            verticalAlignment="center"
-          ></Label>
-          <Switch
-            col="1"
-            [checked]="settings.showHints"
-            (checkedChange)="onHintsToggle($event)"
-          ></Switch>
-        </GridLayout>
-
-        <Label
-          *ngIf="currentMode === GameMode.Offline && settings.showHints"
-          text="Hints will suggest the best move during gameplay"
-          color="rgba(255,255,255,0.75)"
-          fontSize="11"
-          marginTop="2"
-        ></Label>
-      </StackLayout>
-
-      <!-- INSTRUCTIONS -->
-      <StackLayout
-        *ngIf="
-          gameService.gameState === GameState.Playing &&
-          !showSettings &&
-          !showStats
-        "
-        width="100%"
-        maxWidth="340"
-        backgroundColor="rgba(255,255,255,0.15)"
-        borderRadius="16"
-        padding="18"
-        marginTop="8"
-        marginBottom="12"
-      >
-        <Label
-          text="How to Play"
-          fontSize="16"
-          fontWeight="800"
-          color="#FFFFFF"
-          horizontalAlignment="center"
-          marginBottom="8"
-        ></Label>
-        <Label
-          text="• Tap any empty cell to place your mark"
-          color="rgba(255,255,255,0.92)"
-          fontSize="13"
-          marginBottom="6"
-        ></Label>
-        <Label
-          text="• Get three in a row to win (horizontal, vertical, or diagonal)"
-          color="rgba(255,255,255,0.92)"
-          fontSize="13"
-          marginBottom="6"
-        ></Label>
-        <Label
-          *ngIf="currentMode === GameMode.Online"
-          text="• Wait for your turn in online mode"
-          color="rgba(255,255,255,0.9)"
-          fontSize="13"
-          marginBottom="6"
-        ></Label>
-        <Label
-          *ngIf="currentMode === GameMode.Offline"
-          text="• Player X always starts first"
-          color="rgba(255,255,255,0.9)"
-          fontSize="13"
-          marginBottom="6"
-        ></Label>
-        <Label
-          *ngIf="currentMode === GameMode.Offline && settings.showHints"
-          text="• Use the hint button for strategy suggestions"
-          color="rgba(255,255,255,0.9)"
-          fontSize="13"
-          marginBottom="6"
-        ></Label>
-      </StackLayout>
-
-      <!-- ACHIEVEMENT BANNER -->
-      <StackLayout
-        *ngIf="currentStreak >= 3 && currentMode === GameMode.Offline"
-        width="100%"
-        maxWidth="340"
-        borderRadius="20"
-        padding="18"
-        marginTop="12"
-        backgroundColor="#FF6B6B"
-        verticalAlignment="center"
-        horizontalAlignment="center"
-      >
-        <Label
-          text="🔥 ON FIRE! 🔥"
-          fontSize="22"
-          fontWeight="900"
-          color="#FFFFFF"
-          horizontalAlignment="center"
-          marginBottom="6"
-        ></Label>
-        <Label
-          [text]="currentStreak + ' wins in a row!'"
-          fontSize="15"
-          fontWeight="700"
-          color="#FFFFFF"
-          horizontalAlignment="center"
-        ></Label>
       </StackLayout>
     </StackLayout>
-  </StackLayout>
- </ScrollView>
+  </ScrollView>
 
- <Confetti 
+  <Confetti
     row="0"
     #confetti
     [particleCount]="80"
     [burstCount]="1"
     [burstInterval]="300"
-    [duration]="3000">
+    [duration]="3000"
+  >
   </Confetti>
 </GridLayout>
