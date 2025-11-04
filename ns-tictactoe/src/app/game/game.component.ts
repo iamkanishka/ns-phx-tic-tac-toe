@@ -6,10 +6,7 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
-  ViewChild,
-  ElementRef,
-  ViewChildren,
-  QueryList,
+  ViewChild
 } from "@angular/core";
 import { GameService, GameState, Player, GameSettings } from "./game.service";
 import { GameSocketService, ConnectionStatus } from "./game-socket.service";
@@ -20,7 +17,7 @@ import { Subject } from "rxjs";
 import { takeUntil } from "rxjs/operators";
 import { View } from "@nativescript/core";
 import { Dialogs } from "@nativescript/core";
-import { GoogleSignin, User } from "@nativescript/google-signin";
+import { GoogleSignin } from "@nativescript/google-signin";
 import { RouterExtensions } from "@nativescript/angular";
 import {
   AuthenticatedUserResponse,
@@ -223,76 +220,225 @@ export class GameComponent implements OnInit, OnDestroy {
   // GAME ACTIONS
   // ============================================
 
-  async makeMove(index: number, view?: View): Promise<void> {
-    console.log("Tapped index:", index, "View is", view ? "OK" : "MISSING");
 
-    // 🧩 Block input if already animating or not playing
-    if (this.isAnimating || this.gameService.gameState !== GameState.Playing)
-      return;
-    this.isAnimating = true;
+  //  async makeMoveduplicate(index: number, view?: View): Promise<void> {
+  //   if (this.isAnimating) return;
 
-    try {
-      // 🎯 Animate tapped cell (pop)
-      if (view) {
-        await this.animationService.cellPop(view);
+  //   if (this.currentMode === GameMode.Online) {
+  //     // Online mode - check if it's player's turn
+  //     if (!this.gameSocketService.isMyTurn()) {
+  //       this.showToast("Not your turn!", "error");
+  //       return;
+  //     }
+ 
+
+  //     if (this.gameService.cells[index] !== "" && this.gameService.cells[index] !== "-" ) {
+  //       return;
+  //     }
+
+  //     this.gameSocketService.makeMove(index);
+  //   } else {
+  //     // Offline mode
+  //     if (this.gameService.gameState !== GameState.Playing) {
+  //       return;
+  //     }
+
+  //     this.isAnimating = true;
+  //     this.cellStates[index] = true;
+  //     this.suggestedMove = null;
+
+  //     if (view) {
+  //       await this.animationService.cellPop(view);
+  //     } else {
+  //       await this.delay(this.getAnimationSpeed());
+  //     }
+
+  //     const success = this.gameService.makeMove(index);
+
+  //     if (success && this.gameService.gameState !== GameState.Playing) {
+  //       await this.delay(300);
+  //       // Trigger celebration
+  //     }
+
+  //     this.isAnimating = false;
+  //   }
+  // }
+
+
+  // async makeMove(index: number, view?: View): Promise<void> {
+  //   // 🧩 Block input if already animating or not playing
+  //   if (this.isAnimating || this.gameService.gameState !== GameState.Playing)
+  //     return;
+  //   this.isAnimating = true;
+
+  //   try {
+  //     // 🎯 Animate tapped cell (pop)
+  //     if (view) {
+  //       await this.animationService.cellPop(view);
+  //     }
+
+  //     // 🧠 Make the move in game logic
+  //     const moveSuccessful = this.gameService.makeMove(index);
+
+  //     // 🏆 Handle win condition
+  //     if (moveSuccessful && this.gameService.gameState !== GameState.Playing) {
+  //       const winningLine = this.gameService.winningLine;
+
+  //       if (winningLine && winningLine.length > 0) {
+  //         // Collect all winning cell views
+  //         const winViews: View[] = winningLine
+  //           .map((i) => this.cellRefs[i])
+  //           .filter((v): v is View => !!v);
+
+  //         // ✨ Animate each winning cell with a pulse
+  //         // for (const v of winViews) {
+  //         //   await this.animationService.winningCellAnimation(v);
+  //         // }
+
+  //         // 💫 Multi-cell shake celebration
+  //         await this.animationService.multiCellShake(winViews);
+
+  //         // 🥇 Center cell extra celebration
+  //         const centerIndex = winningLine[Math.floor(winningLine.length / 2)];
+  //         const centerCell = this.cellRefs[centerIndex];
+  //         if (centerCell) {
+  //           await this.animationService.celebrateWin(centerCell);
+  //           // Trigger confetti animation
+  //         }
+
+  //         this.confetti_Burst.trigger();
+  //         this.gameService.confettiCelebrate();
+
+  //         // 🔁 Continuous pulse loop for winning cells
+  //         this.loopWinningPulse(winViews);
+  //       }
+  //     }
+
+  //     // 😅 Handle draw — shake all cells slightly
+  //     if (
+  //       this.gameService.gameState !== GameState.Playing &&
+  //       !this.gameService.winningLine
+  //     ) {
+  //       for (const ref of this.cellRefs) {
+  //         const cell = ref as View;
+  //         if (cell) {
+  //           await this.animationService.shakeAnimation(cell);
+  //         }
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("makeMove animation error:", err);
+  //   } finally {
+  //     // ✅ Reset animation lock
+  //     this.isAnimating = false;
+  //   }
+  // }
+
+
+async makeMove(index: number, view?: View): Promise<void> {
+  // 🧩 Prevent overlapping animations
+  if (this.isAnimating) return;
+  this.isAnimating = true;
+
+  try {
+    const isOnline = this.currentMode === GameMode.Online;
+
+    // =========================
+    // 🕹️ ONLINE MODE
+    // =========================
+    if (isOnline) {
+      if (!this.gameSocketService.isMyTurn()) {
+        this.showToast("Not your turn!", "error");
+        this.isAnimating = false;
+        return;
       }
 
-      // 🧠 Make the move in game logic
-      const moveSuccessful = this.gameService.makeMove(index);
+      // Prevent move on already filled cell
+      if (this.gameService.cells[index] !== "" && this.gameService.cells[index] !== "-") {
+        this.isAnimating = false;
+        return;
+      }
 
-      // 🏆 Handle win condition
-      if (moveSuccessful && this.gameService.gameState !== GameState.Playing) {
-        const winningLine = this.gameService.winningLine;
+      // Animate tapped cell before sending
+      if (view) await this.animationService.cellPop(view);
 
-        if (winningLine && winningLine.length > 0) {
-          // Collect all winning cell views
-          const winViews: View[] = winningLine
-            .map((i) => this.cellRefs[i])
-            .filter((v): v is View => !!v);
+      // Send move to the server (the server updates all clients)
+      this.gameSocketService.makeMove(index);
 
-          // ✨ Animate each winning cell with a pulse
-          // for (const v of winViews) {
-          //   await this.animationService.winningCellAnimation(v);
-          // }
+      // Wait briefly so the server update can reflect in UI
+      await this.delay(100);
+    }
 
-          // 💫 Multi-cell shake celebration
-          await this.animationService.multiCellShake(winViews);
+    // =========================
+    // 🎮 OFFLINE MODE
+    // =========================
+    else {
+      if (this.gameService.gameState !== GameState.Playing) {
+        this.isAnimating = false;
+        return;
+      }
 
-          // 🥇 Center cell extra celebration
-          const centerIndex = winningLine[Math.floor(winningLine.length / 2)];
-          const centerCell = this.cellRefs[centerIndex];
-          if (centerCell) {
-            await this.animationService.celebrateWin(centerCell);
-            // Trigger confetti animation
-          }
+      this.cellStates[index] = true;
+      this.suggestedMove = null;
 
-          this.confetti_Burst.trigger();
-          this.gameService.confettiCelebrate();
+      // Animate tapped cell
+      if (view) await this.animationService.cellPop(view);
+      else await this.delay(this.getAnimationSpeed());
 
-          // 🔁 Continuous pulse loop for winning cells
-          this.loopWinningPulse(winViews);
+      // Apply the move in local game logic
+      this.gameService.makeMove(index);
+    }
+
+    // =========================
+    // 🌟 SHARED ANIMATION LOGIC
+    // (Works for both Online & Offline)
+    // =========================
+
+    // Wait a bit before showing results
+    await this.delay(300);
+
+    // 🏆 WIN condition
+    if (this.gameService.gameState !== GameState.Playing) {
+      const winningLine = this.gameService.winningLine;
+
+      if (winningLine && winningLine.length > 0) {
+        const winViews: View[] = winningLine
+          .map((i) => this.cellRefs[i])
+          .filter((v): v is View => !!v);
+
+        // 💫 Shake all winning cells together
+        await this.animationService.multiCellShake(winViews);
+
+        // 🎯 Center cell celebration
+        const centerIndex = winningLine[Math.floor(winningLine.length / 2)];
+        const centerCell = this.cellRefs[centerIndex];
+        if (centerCell) {
+          await this.animationService.celebrateWin(centerCell);
         }
-      }
 
-      // 😅 Handle draw — shake all cells slightly
-      if (
-        this.gameService.gameState !== GameState.Playing &&
-        !this.gameService.winningLine
-      ) {
+        // 🎉 Confetti + celebration trigger
+        this.confetti_Burst.trigger();
+        this.gameService.confettiCelebrate();
+
+        // 🔁 Keep winning cells pulsing
+        this.loopWinningPulse(winViews);
+      } else {
+        // 🤝 DRAW condition — shake all cells
         for (const ref of this.cellRefs) {
           const cell = ref as View;
-          if (cell) {
-            await this.animationService.shakeAnimation(cell);
-          }
+          if (cell) await this.animationService.shakeAnimation(cell);
         }
       }
-    } catch (err) {
-      console.error("makeMove animation error:", err);
-    } finally {
-      // ✅ Reset animation lock
-      this.isAnimating = false;
     }
+  } catch (err) {
+    console.error("makeMove error:", err);
+  } finally {
+    this.isAnimating = false;
   }
+}
+
+
+
 
   private async loopWinningPulse(winViews: View[]): Promise<void> {
     try {
