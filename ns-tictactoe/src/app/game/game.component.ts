@@ -6,7 +6,7 @@ import {
   OnInit,
   OnDestroy,
   ChangeDetectorRef,
-  ViewChild
+  ViewChild,
 } from "@angular/core";
 import { GameService, GameState, Player, GameSettings } from "./game.service";
 import { GameSocketService, ConnectionStatus } from "./game-socket.service";
@@ -99,11 +99,17 @@ export class GameComponent implements OnInit, OnDestroy {
   public isLoadingGames = false;
 
   // user info
-  userInfo: AuthenticatedUserResponse | null = null;
+  protected userInfo: AuthenticatedUserResponse | null = null;
 
   // 🔹 Added: All cell element references
   //  @ViewChildren("cellRef", { read: ElementRef }) cellRefs!: QueryList<ElementRef>;
-  cellRefs: View[] = [];
+  protected cellRefs: View[] = [];
+
+  // 🔹 Added: Loader for creating online game
+  protected createOnlineGameLoader: boolean = false;
+
+  // 🔹 Added: Loader for joining online game
+  protected isJoinLoading: boolean = false;
 
   constructor(
     public gameService: GameService,
@@ -220,7 +226,6 @@ export class GameComponent implements OnInit, OnDestroy {
   // GAME ACTIONS
   // ============================================
 
-
   //  async makeMoveduplicate(index: number, view?: View): Promise<void> {
   //   if (this.isAnimating) return;
 
@@ -230,7 +235,6 @@ export class GameComponent implements OnInit, OnDestroy {
   //       this.showToast("Not your turn!", "error");
   //       return;
   //     }
- 
 
   //     if (this.gameService.cells[index] !== "" && this.gameService.cells[index] !== "-" ) {
   //       return;
@@ -263,7 +267,6 @@ export class GameComponent implements OnInit, OnDestroy {
   //     this.isAnimating = false;
   //   }
   // }
-
 
   // async makeMove(index: number, view?: View): Promise<void> {
   //   // 🧩 Block input if already animating or not playing
@@ -334,111 +337,110 @@ export class GameComponent implements OnInit, OnDestroy {
   //   }
   // }
 
+  async makeMove(index: number, view?: View): Promise<void> {
+    // 🧩 Prevent overlapping animations
+    if (this.isAnimating) return;
+    this.isAnimating = true;
 
-async makeMove(index: number, view?: View): Promise<void> {
-  // 🧩 Prevent overlapping animations
-  if (this.isAnimating) return;
-  this.isAnimating = true;
+    try {
+      const isOnline = this.currentMode === GameMode.Online;
 
-  try {
-    const isOnline = this.currentMode === GameMode.Online;
+      // =========================
+      // 🕹️ ONLINE MODE
+      // =========================
+      if (isOnline) {
+        if (!this.gameSocketService.isMyTurn()) {
+          this.showToast("Not your turn!", "error");
+          this.isAnimating = false;
+          return;
+        }
 
-    // =========================
-    // 🕹️ ONLINE MODE
-    // =========================
-    if (isOnline) {
-      if (!this.gameSocketService.isMyTurn()) {
-        this.showToast("Not your turn!", "error");
-        this.isAnimating = false;
-        return;
+        // Prevent move on already filled cell
+        if (
+          this.gameService.cells[index] !== "" &&
+          this.gameService.cells[index] !== "-"
+        ) {
+          this.isAnimating = false;
+          return;
+        }
+
+        // Animate tapped cell before sending
+        if (view) await this.animationService.cellPop(view);
+
+        // Send move to the server (the server updates all clients)
+        this.gameSocketService.makeMove(index);
+
+        // Wait briefly so the server update can reflect in UI
+        await this.delay(100);
       }
 
-      // Prevent move on already filled cell
-      if (this.gameService.cells[index] !== "" && this.gameService.cells[index] !== "-") {
-        this.isAnimating = false;
-        return;
+      // =========================
+      // 🎮 OFFLINE MODE
+      // =========================
+      else {
+        if (this.gameService.gameState !== GameState.Playing) {
+          this.isAnimating = false;
+          return;
+        }
+
+        this.cellStates[index] = true;
+        this.suggestedMove = null;
+
+        // Animate tapped cell
+        if (view) await this.animationService.cellPop(view);
+        else await this.delay(this.getAnimationSpeed());
+
+        // Apply the move in local game logic
+        this.gameService.makeMove(index);
       }
 
-      // Animate tapped cell before sending
-      if (view) await this.animationService.cellPop(view);
+      // =========================
+      // 🌟 SHARED ANIMATION LOGIC
+      // (Works for both Online & Offline)
+      // =========================
 
-      // Send move to the server (the server updates all clients)
-      this.gameSocketService.makeMove(index);
+      // Wait a bit before showing results
+      await this.delay(300);
 
-      // Wait briefly so the server update can reflect in UI
-      await this.delay(100);
-    }
-
-    // =========================
-    // 🎮 OFFLINE MODE
-    // =========================
-    else {
+      // 🏆 WIN condition
       if (this.gameService.gameState !== GameState.Playing) {
-        this.isAnimating = false;
-        return;
-      }
+        const winningLine = this.gameService.winningLine;
 
-      this.cellStates[index] = true;
-      this.suggestedMove = null;
+        if (winningLine && winningLine.length > 0) {
+          const winViews: View[] = winningLine
+            .map((i) => this.cellRefs[i])
+            .filter((v): v is View => !!v);
 
-      // Animate tapped cell
-      if (view) await this.animationService.cellPop(view);
-      else await this.delay(this.getAnimationSpeed());
+          // 💫 Shake all winning cells together
+          await this.animationService.multiCellShake(winViews);
 
-      // Apply the move in local game logic
-      this.gameService.makeMove(index);
-    }
+          // 🎯 Center cell celebration
+          const centerIndex = winningLine[Math.floor(winningLine.length / 2)];
+          const centerCell = this.cellRefs[centerIndex];
+          if (centerCell) {
+            await this.animationService.celebrateWin(centerCell);
+          }
 
-    // =========================
-    // 🌟 SHARED ANIMATION LOGIC
-    // (Works for both Online & Offline)
-    // =========================
+          // 🎉 Confetti + celebration trigger
+          this.confetti_Burst.trigger();
+          this.gameService.confettiCelebrate();
 
-    // Wait a bit before showing results
-    await this.delay(300);
-
-    // 🏆 WIN condition
-    if (this.gameService.gameState !== GameState.Playing) {
-      const winningLine = this.gameService.winningLine;
-
-      if (winningLine && winningLine.length > 0) {
-        const winViews: View[] = winningLine
-          .map((i) => this.cellRefs[i])
-          .filter((v): v is View => !!v);
-
-        // 💫 Shake all winning cells together
-        await this.animationService.multiCellShake(winViews);
-
-        // 🎯 Center cell celebration
-        const centerIndex = winningLine[Math.floor(winningLine.length / 2)];
-        const centerCell = this.cellRefs[centerIndex];
-        if (centerCell) {
-          await this.animationService.celebrateWin(centerCell);
-        }
-
-        // 🎉 Confetti + celebration trigger
-        this.confetti_Burst.trigger();
-        this.gameService.confettiCelebrate();
-
-        // 🔁 Keep winning cells pulsing
-        this.loopWinningPulse(winViews);
-      } else {
-        // 🤝 DRAW condition — shake all cells
-        for (const ref of this.cellRefs) {
-          const cell = ref as View;
-          if (cell) await this.animationService.shakeAnimation(cell);
+          // 🔁 Keep winning cells pulsing
+          this.loopWinningPulse(winViews);
+        } else {
+          // 🤝 DRAW condition — shake all cells
+          for (const ref of this.cellRefs) {
+            const cell = ref as View;
+            if (cell) await this.animationService.shakeAnimation(cell);
+          }
         }
       }
+    } catch (err) {
+      console.error("makeMove error:", err);
+    } finally {
+      this.isAnimating = false;
     }
-  } catch (err) {
-    console.error("makeMove error:", err);
-  } finally {
-    this.isAnimating = false;
   }
-}
-
-
-
 
   private async loopWinningPulse(winViews: View[]): Promise<void> {
     try {
@@ -506,7 +508,7 @@ async makeMove(index: number, view?: View): Promise<void> {
   switchToOnlineMode(): void {
     this.currentMode = GameMode.Online;
     this.showLobby = true;
-    this.loadWaitingGames();
+    // this.loadWaitingGames();
   }
 
   switchToOfflineMode(): void {
@@ -555,6 +557,7 @@ async makeMove(index: number, view?: View): Promise<void> {
   }
 
   async createOnlineGame(): Promise<void> {
+    this.createOnlineGameLoader = true;
     try {
       this.currentGameId = await this.gameSocketService.createGame(
         this.userInfo.user.id,
@@ -563,11 +566,15 @@ async makeMove(index: number, view?: View): Promise<void> {
 
       console.log(this.currentGameId + "Game Created");
 
+      this.createOnlineGameLoader = false;
+
       this.showLobby = false;
       this.showCreateGame = false;
 
       this.showToast("Game created! Share the ID with your friend.", "success");
     } catch (error: any) {
+      this.createOnlineGameLoader = false;
+
       console.log(error + "Error Checking");
 
       this.showToast("Failed to create game", "error");
@@ -587,7 +594,7 @@ async makeMove(index: number, view?: View): Promise<void> {
     //   if (!result.result) return;
     //   this.playerName = result.text || "Player 2";
     // }
-
+    this.isJoinLoading = true;
     try {
       await this.gameSocketService.joinGame(
         gameId,
@@ -598,8 +605,12 @@ async makeMove(index: number, view?: View): Promise<void> {
       this.showLobby = false;
       this.showJoinGame = false;
 
+      this.isJoinLoading = false;
+
       this.showToast("Joined game successfully!", "success");
     } catch (error: any) {
+      this.isJoinLoading = false;
+
       this.showToast("Failed to join game", "error");
     }
   }
@@ -650,37 +661,36 @@ async makeMove(index: number, view?: View): Promise<void> {
   }
 
   showHintMove(): void {
-  if (
-    !this.settings.showHints ||
-    this.gameService.gameState !== GameState.Playing
-  ) {
-    return;
-  }
-
-  if (this.currentMode === GameMode.Online) {
-    this.showToast("Hints not available in online mode", "info");
-    return;
-  }
-
-  // 🎯 Choose the hint position
-  this.suggestedMove = this.gameService.getSuggestedMove();
-  this.showHint = true;
-
-  // Wait a tick so the hint label renders before animation
-  setTimeout(() => {
-    const hintView = this.cellRefs[this.suggestedMove];
-    if (hintView && hintView.isLoaded) {
-      this.animationService.animateHint(hintView);
+    if (
+      !this.settings.showHints ||
+      this.gameService.gameState !== GameState.Playing
+    ) {
+      return;
     }
-  }, 100);
 
-  // ⏳ Hide after 2 seconds
-  setTimeout(() => {
-    this.showHint = false;
-    this.suggestedMove = null;
-  }, 2000);
-}
+    if (this.currentMode === GameMode.Online) {
+      this.showToast("Hints not available in online mode", "info");
+      return;
+    }
 
+    // 🎯 Choose the hint position
+    this.suggestedMove = this.gameService.getSuggestedMove();
+    this.showHint = true;
+
+    // Wait a tick so the hint label renders before animation
+    setTimeout(() => {
+      const hintView = this.cellRefs[this.suggestedMove];
+      if (hintView && hintView.isLoaded) {
+        this.animationService.animateHint(hintView);
+      }
+    }, 100);
+
+    // ⏳ Hide after 2 seconds
+    setTimeout(() => {
+      this.showHint = false;
+      this.suggestedMove = null;
+    }, 2000);
+  }
 
   onAnimationSpeedChange(args: any): void {
     const speeds = ["fast", "normal", "slow"];
