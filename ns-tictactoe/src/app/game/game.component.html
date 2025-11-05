@@ -283,31 +283,66 @@
           horizontalAlignment="center"
           spacing="12"
         >
-          <Button
-            text="🎮  Start New Game"
+          <StackLayout
             (tap)="createOnlineGame()"
+            orientation="horizontal"
+            horizontalAlignment="center"
+            verticalAlignment="center"
             backgroundColor="#FF6B6B"
-            color="#FFFFFF"
             borderRadius="24"
             width="220"
             height="48"
-            horizontalAlignment="center"
             padding="10"
-            accessibilityLabel="Create new game"
-          ></Button>
+            [isEnabled]="!createOnlineGameLoader"
+          >
+            <Label
+              [text]="
+                createOnlineGameLoader ? 'Starting...' : '🎮  Start New Game'
+              "
+              verticalAlignment="center"
+              color="white"
+              fontSize="16"
+              
+            ></Label>
 
-          <Button
-            text="📋 Join by Game ID"
+            <ActivityIndicator
+              [busy]="createOnlineGameLoader"
+              [visibility]="createOnlineGameLoader ? 'visible' : 'collapse'"
+              marginLeft="10"
+              verticalAlignment="center"
+            ></ActivityIndicator>
+          </StackLayout>
+
+          <StackLayout
             (tap)="showJoinGameForm()"
+            orientation="horizontal"
+            horizontalAlignment="center"
+            verticalAlignment="center"
             backgroundColor="rgba(255,255,255,0.12)"
-            color="#FFFFFF"
             borderRadius="24"
             width="220"
             height="48"
-            horizontalAlignment="center"
             padding="10"
-            accessibilityLabel="Join game by ID"
-          ></Button>
+            marginTop="8"
+            [isEnabled]="!isJoinLoading"
+          >
+            <!-- Label text updates dynamically -->
+            <Label
+              [text]="isJoinLoading ? 'Joining...' : '📋  Join by Game ID'"
+              verticalAlignment="center"
+              color="white"
+              fontSize="16"
+              
+            ></Label>
+
+            <!-- Spinner beside text -->
+            <ActivityIndicator
+              [busy]="isJoinLoading"
+              [visibility]="isJoinLoading ? 'visible' : 'collapse'"
+              marginLeft="10"
+              verticalAlignment="center"
+            ></ActivityIndicator>
+          </StackLayout>
         </StackLayout>
 
         <!-- WAITING GAMES LIST -->
@@ -686,7 +721,7 @@
           </StackLayout>
         </GridLayout>
 
-         <!-- 
+        <!-- 
        <game-header></game-header>
         -->
 
