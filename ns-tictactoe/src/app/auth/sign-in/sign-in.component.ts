@@ -19,6 +19,7 @@ export class SignInComponent implements OnInit {
   password: string = "";
   agreeTerms: boolean = false;
   passwordHidden: boolean = true;
+  isLoadingGoogle:  boolean = false;
   constructor(
     private _page: Page,
     private router: RouterExtensions,
@@ -35,6 +36,7 @@ export class SignInComponent implements OnInit {
   }
 
   async onGoogleSignUp() {
+    this.isLoadingGoogle = true;
     console.log("Google Sign-Up clicked");
 
     await GoogleSignin.configure({
@@ -62,10 +64,14 @@ export class SignInComponent implements OnInit {
         tap((backendResponse) => {
           if (backendResponse) {
             console.log("🎉 User Authenticated and Stored:", backendResponse);
+          this.isLoadingGoogle = false;
+
             this.router.navigate(["/game"], { clearHistory: true });
           }
         }),
         catchError((err) => {
+          this.isLoadingGoogle = false;
+
           console.error("❌ Error during Google Sign-Up:", err);
           return of(null);
         })
