@@ -32,16 +32,15 @@ export class SoundService {
   private soundEnabled = true;
   private isInitialized = false;
 
-  private soundPaths: Record<SoundType, string> = {
-    [SoundType.Move]: "assets/sounds/move.wav",
-    [SoundType.Win]: "assets/sounds/win.wav",
-    [SoundType.Draw]: "assets/sounds/draw.wav",
-    [SoundType.Invalid]: "assets/sounds/invalid.wav",
-    [SoundType.Reset]: "assets/sounds/reset.wav",
-    [SoundType.Click]: "assets/sounds/click.wav",
-    [SoundType.Confetti]: "assets/sounds/confetti.wav",
-
-  };
+private soundPaths: Record<SoundType, string> = {
+  [SoundType.Move]: "sounds/move.wav",
+  [SoundType.Win]: "sounds/win.wav",
+  [SoundType.Draw]: "sounds/draw.wav",
+  [SoundType.Invalid]: "sounds/invalid.wav",
+  [SoundType.Reset]: "sounds/reset.wav",
+  [SoundType.Click]: "sounds/click.wav",
+  [SoundType.Confetti]: "sounds/confetti.wav",
+};
 
   constructor() {}
 
@@ -59,9 +58,8 @@ export class SoundService {
       }
 
       for (const [type, relativePath] of Object.entries(this.soundPaths)) {
-        const absPath = this.getAbsolutePath(relativePath);
-
         if (isIOS) {
+          const absPath = this.getAbsolutePath(relativePath);
           const url = NSURL.fileURLWithPath(absPath);
           const player = AVAudioPlayer.alloc().initWithContentsOfURLError(url);
           if (player) {
@@ -69,7 +67,7 @@ export class SoundService {
             this.players.set(type as SoundType, player);
           }
         } else if (isAndroid) {
-          // Just preload paths; playback uses asset manager
+          // Just store paths for Android; playback uses asset manager
           this.players.set(type as SoundType, relativePath);
         }
       }
@@ -89,8 +87,9 @@ export class SoundService {
       // Assets are packed in the APK, not accessible via normal file path
       return relativePath;
     }
+    // For iOS, construct the full path
     const appFolder = knownFolders.currentApp().path;
-    return path.join(appFolder, relativePath);
+    return path.join(appFolder, "App_Resources", "iOS", "assets", relativePath);
   }
 
   // -----------------------------------------------
@@ -128,11 +127,10 @@ export class SoundService {
   private async playAndroidSound(type: SoundType, volume: number): Promise<void> {
     try {
       const soundPath = this.soundPaths[type];
-      const androidAssetPath = soundPath.replace("assets/", "");
 
       const context = (global as any).android?.context || (androidApp as any).context;
       const assetManager = context.getAssets();
-      const afd = assetManager.openFd(androidAssetPath);
+      const afd = assetManager.openFd(soundPath);
 
       const mediaPlayer = new android.media.MediaPlayer();
       mediaPlayer.setDataSource(
@@ -186,7 +184,3 @@ export class SoundService {
     this.isInitialized = false;
   }
 }
-
-
- // "@valor/nativescript-feedback": "^2.0.2",
-        // "nativescript-audio": "^6.2.6",
