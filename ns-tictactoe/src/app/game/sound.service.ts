@@ -4,7 +4,6 @@ import {
   isIOS,
   knownFolders,
   path,
-  File,
   Application as androidApp,
 } from "@nativescript/core";
 
