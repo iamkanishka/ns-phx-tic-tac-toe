@@ -142,42 +142,41 @@ export class GameSocketService implements OnDestroy {
   //   }
   // }
 
-
   async joinGame(
-  gameId: string,
-  playerId: string,
-  playerName: string
-): Promise<void> {
-  await this.connectToGame(gameId, playerId, playerName);
+    gameId: string,
+    playerId: string,
+    playerName: string
+  ): Promise<void> {
+    await this.connectToGame(gameId, playerId, playerName);
 
-  if (this.channel) {
-    this.channel
-      .push("join_game", {})
-      .receive("ok", (response: any) => {
-        console.log("Joined/Rejoined game successfully:", response);
-        this.updateGameState(response);
-        
-        // Determine player symbol based on the response
-        if (response.player_x?.id === playerId) {
-          this.myPlayerSymbolSubject.next("X");
-        } else if (response.player_o?.id === playerId) {
-          this.myPlayerSymbolSubject.next("O");
-        }
-      })
-      .receive("error", (error: any) => {
-        console.error("Failed to join game:", error);
-        
-        // If error is because game is finished, handle it differently
-        if (error.reason === "game_finished") {
-          this.errorSubject.next("This game has already finished");
-        } else if (error.reason === "game_full") {
-          this.errorSubject.next("Game is full");
-        } else {
-          this.errorSubject.next(`Failed to join: ${error.reason}`);
-        }
-      });
+    if (this.channel) {
+      this.channel
+        .push("join_game", {})
+        .receive("ok", (response: any) => {
+          console.log("Joined/Rejoined game successfully:", response);
+          this.updateGameState(response);
+
+          // Determine player symbol based on the response
+          if (response.player_x?.id === playerId) {
+            this.myPlayerSymbolSubject.next("X");
+          } else if (response.player_o?.id === playerId) {
+            this.myPlayerSymbolSubject.next("O");
+          }
+        })
+        .receive("error", (error: any) => {
+          console.error("Failed to join game:", error);
+
+          // If error is because game is finished, handle it differently
+          if (error.reason === "game_finished") {
+            this.errorSubject.next("This game has already finished");
+          } else if (error.reason === "game_full") {
+            this.errorSubject.next("Game is full");
+          } else {
+            this.errorSubject.next(`Failed to join: ${error.reason}`);
+          }
+        });
+    }
   }
-}
 
   // ========================================================
   // SOCKET CONNECTION (NativeScript WebSocket)
@@ -193,19 +192,19 @@ export class GameSocketService implements OnDestroy {
         this.disconnect();
 
         // ✅ Native WebSocket transport
-        const createTransport = () => {
-          const ws = new NativeWebSocket(`${this.WS_URL}?player_id=${playerId}&player_name=${playerName}`, [], {});
-          ws.on("open", () => console.log("NativeScript WebSocket connected"));
-          ws.on("error", (err) => console.error("NativeScript WebSocket error", err));
-          return ws;
-        };
+        // const createTransport = () => {
+        //   const ws = new NativeWebSocket(`${this.WS_URL}?player_id=${playerId}&player_name=${playerName}`, [], {});
+        //   ws.on("open", () => console.log("NativeScript WebSocket connected"));
+        //   ws.on("error", (err) => console.error("NativeScript WebSocket error", err));
+        //   return ws;
+        // };
 
         this.socket = new Socket(this.WS_URL, {
           transport: NativeWebSocket,
-            params: {
-    player_id: playerId,
-    player_name: playerName,
-  },
+          params: {
+            player_id: playerId,
+            player_name: playerName,
+          },
           heartbeatIntervalMs: 30000,
         });
 
