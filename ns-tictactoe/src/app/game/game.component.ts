@@ -508,7 +508,7 @@ export class GameComponent implements OnInit, OnDestroy {
   switchToOnlineMode(): void {
     this.currentMode = GameMode.Online;
     this.showLobby = true;
-    // this.loadWaitingGames();
+     this.loadWaitingGames();
   }
 
   switchToOfflineMode(): void {
@@ -522,7 +522,7 @@ export class GameComponent implements OnInit, OnDestroy {
   // ONLINE MULTIPLAYER
   // ============================================
 
-  async loadWaitingGames(): Promise<void> {
+    async loadWaitingGames(): Promise<void> {
     this.isLoadingGames = true;
     try {
       this.waitingGames = await this.gameSocketService.getWaitingGames(
