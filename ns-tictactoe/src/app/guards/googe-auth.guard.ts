@@ -1,8 +1,7 @@
 import { Injectable } from "@angular/core";
 import { CanActivate, Router } from "@angular/router";
-import { GoogleSignin } from "@nativescript/google-signin";
+import { ApplicationSettings } from "@nativescript/core";
 import { AuthService } from "../auth/service/auth/auth.service";
- 
 
 @Injectable({
   providedIn: "root",
@@ -12,19 +11,19 @@ export class GoogleAuthGuard implements CanActivate {
 
   async canActivate(): Promise<boolean> {
     try {
-      const currentUser: any = await this.authService.getCurrentUser();
+      const storedUser = ApplicationSettings.getString("user");
+      const user = storedUser ? JSON.parse(storedUser) : this.authService.getCurrentUser();
 
-      if (currentUser && currentUser._accessToken) {
-        // ✅ User is signed in
-        console.log("User is signed in:", currentUser);
+      if (user && user.email_verified) {
+        console.log("✅ AuthGuard: User verified:", user.email);
         return true;
-      } else {
-        // 🚫 Not signed in → redirect to login
-        this.router.navigate(["signin"]);
-        return false;
       }
+
+      console.warn("🚫 AuthGuard: No valid user → redirecting to sign-in...");
+      this.router.navigate(["signin"]);
+      return false;
     } catch (error) {
-      console.error("Error checking Google Sign-In:", error);
+      console.error("❌ AuthGuard Error:", error);
       this.router.navigate(["signin"]);
       return false;
     }
