@@ -3,7 +3,9 @@
        ========================= -->
 <ActionBar backgroundColor="#000000" color="#FFFFFF" title="">
   <!-- Back Button -->
+  
   <NavigationButton
+  *ngIf="this.currentMode === GameMode.Online"
     text="←"
     (tap)="switchToOfflineMode()"
     android.systemIcon="ic_menu_back"
@@ -113,9 +115,11 @@
           marginBottom="10"
         ></Label>
 
+        <!--
         <StackLayout>
           <Button text="🎉 Celebrate!" (tap)="celebrate()"></Button>
         </StackLayout>
+      -->
 
         <Button
           text="🌐 Play Online"
@@ -661,69 +665,98 @@
         </GridLayout>
 
         <!-- PLAYERS INFO (Online) -->
-        <GridLayout
-          *ngIf="currentMode === GameMode.Online && opponentConnected"
-          columns="*, *"
-          width="100%"
-          backgroundColor="rgba(255,255,255,0.12)"
-          borderRadius="16"
-          padding="12"
-          marginBottom="12"
-        >
-          <StackLayout
-            col="0"
-            horizontalAlignment="center"
-            padding="12"
-            backgroundColor="{{
-              mySymbol === 'X'
-                ? 'rgba(255,255,255,0.2)'
-                : 'rgba(255,255,255,0.1)'
-            }}"
-            borderRadius="12"
-          >
-            <Label
-              text="YOU"
-              fontSize="11"
-              fontWeight="700"
-              color="rgba(255,255,255,0.85)"
-            ></Label>
-            <Label
-              [text]="mySymbol"
-              fontSize="36"
-              fontWeight="900"
-              color="#FF4081"
-            ></Label>
-          </StackLayout>
+   <!-- PLAYERS INFO (Online) -->
+<GridLayout
+  *ngIf="currentMode === GameMode.Online && opponentConnected"
+  columns="*, *"
+  width="100%"
+  backgroundColor="rgba(255,255,255,0.12)"
+  borderRadius="16"
+  padding="12"
+  marginBottom="12"
+>
+  <StackLayout
+    col="0"
+    horizontalAlignment="center"
+    verticalAlignment="middle"
+    padding="12"
+    backgroundColor="{{
+      mySymbol === 'X'
+        ? 'rgba(255,255,255,0.2)'
+        : 'rgba(255,255,255,0.1)'
+    }}"
+    borderRadius="12"
+  >
+    <Label
+      text="YOU"
+      fontSize="11"
+      fontWeight="700"
+      color="rgba(255,255,255,0.85)"
+    ></Label>
+    <Label
+      [text]="mySymbol"
+      fontSize="36"
+      fontWeight="900"
+      [color]="mySymbol === 'X' ? '#FF4081' : '#40C4FF'"
+    ></Label>
+  </StackLayout>
 
-          <StackLayout
-            col="1"
-            horizontalAlignment="center"
-            padding="12"
-            backgroundColor="{{
-              mySymbol === 'O'
-                ? 'rgba(255,255,255,0.2)'
-                : 'rgba(255,255,255,0.1)'
-            }}"
-            borderRadius="12"
-          >
-            <Label
-              text="OPPONENT"
-              fontSize="11"
-              fontWeight="700"
-              color="rgba(255,255,255,0.85)"
-            ></Label>
-            <Label
-              [text]="mySymbol === 'X' ? 'O' : 'X'"
-              fontSize="36"
-              fontWeight="900"
-              color="#40C4FF"
-            ></Label>
-          </StackLayout>
-        </GridLayout>
+  <StackLayout
+    col="1"
+    horizontalAlignment="center"
+    verticalAlignment="middle"
+    padding="12"
+    backgroundColor="{{
+      mySymbol === 'O'
+        ? 'rgba(255,255,255,0.2)'
+        : 'rgba(255,255,255,0.1)'
+    }}"
+    borderRadius="12"
+  >
+    <Label
+      text="OPPONENT"
+      fontSize="11"
+      fontWeight="700"
+      color="rgba(255,255,255,0.85)"
+    ></Label>
+    <Label
+      [text]="mySymbol === 'X' ? 'O' : 'X'"
+      fontSize="36"
+      fontWeight="900"
+      [color]="mySymbol === 'X' ? '#40C4FF' : '#FF4081'"
+    ></Label>
+  </StackLayout>
+</GridLayout>
 
-        <!-- 
-       <game-header></game-header>
-        -->
+        
+      
+       <game-header 
+       #gameheader
+        [currentMode]="currentMode"
+        [opponentConnected]="opponentConnected"
+        [mySymbol]="mySymbol"
+       ></game-header>
+       
+    <!-- HINT BUTTON (Offline) 
+
+         <StackLayout class="header">
+                    <Label [text]="getStatusMessage()" 
+                           class="status-message" 
+                           [class.playing]="gameService.gameState === GameState.Playing"
+                           [class.won]="gameService.gameState === GameState.Won"
+                           [class.draw]="gameService.gameState === GameState.Draw"
+                           [accessibilityLabel]="getStatusMessage()" color="white"></Label>
+                           
+                    <Label [text]="getStatusSubtitle()" 
+                           class="status-subtitle"
+                           [accessibilityLabel]="getStatusSubtitle()"></Label>
+                </StackLayout>
+                -->
+
+
+
+
+        
 
         <!-- HINT BUTTON (Offline) -->
         <Button
@@ -855,38 +888,39 @@
         </GridLayout>
 
         <!-- ACTION BUTTONS -->
-        <FlexboxLayout
-          flexDirection="row"
-          justifyContent="space-between"
-          width="100%"
-          maxWidth="340"
-          marginBottom="12"
-          alignItems="center"
-        >
-          <Button
-            [text]="
-              currentMode === GameMode.Online ? '🚪 Leave Game' : '🔄 New Game'
-            "
-            (tap)="resetGame()"
-            backgroundColor="#FF6B6B"
-            color="#FFFFFF"
-            borderRadius="16"
-            padding="14"
-            width="48%"
-            isEnabled="{{ !isAnimating }}"
-          ></Button>
+        <!-- ACTION BUTTONS -->
+<FlexboxLayout
+  flexDirection="row"
+  [justifyContent]="currentMode === GameMode.Online ? 'center' : 'space-between'"
+  width="100%"
+  maxWidth="340"
+  marginBottom="12"
+  alignItems="center"
+>
+  <Button
+    [text]="
+      currentMode === GameMode.Online ? '🚪 Leave Game' : '🔄 New Game'
+    "
+    (tap)="resetGame()"
+    [backgroundColor]="currentMode === GameMode.Online ? '#FF0000' : '#FF6B6B'"
+    color="#FFFFFF"
+    borderRadius="16"
+    padding="14"
+    [width]="currentMode === GameMode.Online ? '60%' : '48%'"
+    isEnabled="{{ !isAnimating }}"
+  ></Button>
 
-          <Button
-            *ngIf="currentMode === GameMode.Offline"
-            text="📊 Reset Scores"
-            (tap)="resetScores()"
-            backgroundColor="rgba(255,255,255,0.22)"
-            color="#FFFFFF"
-            borderRadius="16"
-            padding="14"
-            width="48%"
-          ></Button>
-        </FlexboxLayout>
+  <Button
+    *ngIf="currentMode === GameMode.Offline"
+    text="📊 Reset Scores"
+    (tap)="resetScores()"
+    backgroundColor="rgba(255,255,255,0.22)"
+    color="#FFFFFF"
+    borderRadius="16"
+    padding="14"
+    width="48%"
+  ></Button>
+</FlexboxLayout>
 
         <!-- STATISTICS PANEL -->
         <StackLayout
