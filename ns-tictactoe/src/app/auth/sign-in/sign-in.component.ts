@@ -1,12 +1,11 @@
 import { Component, OnInit } from "@angular/core";
-import { Page } from "@nativescript/core";
-import { GoogleSignin, User } from "@nativescript/google-signin";
-import { AuthService, GoogleUser } from "./../service/auth/auth.service";
+import { Page, ApplicationSettings } from "@nativescript/core";
+import { GoogleSignin } from "@nativescript/google-signin";
+import { AuthService } from "./../service/auth/auth.service";
 import { RouterExtensions } from "@nativescript/angular";
-import { from, tap, switchMap, of, catchError } from "rxjs";
+import { from, of } from "rxjs";
+import { tap, switchMap, catchError, finalize } from "rxjs/operators";
 
-declare var com: any;
- 
 @Component({
   standalone: false,
   selector: "app-sign-in",
@@ -14,12 +13,8 @@ declare var com: any;
   styleUrl: "./sign-in.component.scss",
 })
 export class SignInComponent implements OnInit {
-  name: string = "";
-  email: string = "";
-  password: string = "";
-  agreeTerms: boolean = false;
-  passwordHidden: boolean = true;
-  isLoadingGoogle:  boolean = false;
+  isLoadingGoogle: boolean = false;
+
   constructor(
     private _page: Page,
     private router: RouterExtensions,
@@ -28,57 +23,87 @@ export class SignInComponent implements OnInit {
     this._page.actionBarHidden = true;
   }
 
-  
+  ngOnInit(): void {
+    this.autoLoginIfUserExists();
+  }
 
-  onSignIn() {
-    console.log("routing");
-    this.router.navigate(["/game"], { clearHistory: true });
+  // ✅ Auto-login if user already exists in local storage
+  private autoLoginIfUserExists() {
+    const savedUser = ApplicationSettings.getString("user");
+    if (savedUser) {
+      console.log("🔁 Auto-login with saved user:", JSON.parse(savedUser));
+      this.router.navigate(["/game"], { clearHistory: true });
+    }
   }
 
   async onGoogleSignUp() {
+    console.log("🚀 Google Sign-Up clicked");
     this.isLoadingGoogle = true;
-    console.log("Google Sign-Up clicked");
 
-    await GoogleSignin.configure({
-      scopes: ["email", "profile"],
-    });
+    try {
+      // 1️⃣ Configure Google Sign-In
+      await GoogleSignin.configure({
+        scopes: ["email", "profile"],
+      });
 
-    from(GoogleSignin.signIn())
-      .pipe(
-        tap((user) => console.log("✅ Signed in with Google:", user)),
-        switchMap(() => {
-          const currentUser = GoogleSignin.getCurrentUser();
-          console.log("👤 Current Google User:", currentUser);
-          if (!currentUser) {
-            console.warn("⚠️ No current user found.");
+      // 2️⃣ Begin the reactive sign-in flow
+      from(GoogleSignin.signIn())
+        .pipe(
+          tap((user) => console.log("✅ Signed in with Google:", user)),
+
+          // 3️⃣ Fetch Google user profile info
+          switchMap(() => {
+            const currentUser = GoogleSignin.getCurrentUser();
+            console.log("👤 Current Google User:", currentUser);
+            if (!currentUser) {
+              console.warn("⚠️ No current user found.");
+              return of(null);
+            }
+            return this.authService.getGoogleSignInUserDetailsAPI();
+          }),
+
+          // 4️⃣ Send to backend for authentication & persistence
+          switchMap((googleUserInfo) => {
+            if (googleUserInfo) {
+              console.log("🌐 Google User Info from API:", googleUserInfo);
+              return this.authService.authenticateWithGoogle(googleUserInfo);
+            }
             return of(null);
-          }
-          return this.authService.getGoogleSignInUserDetailsAPI();
-        }),
-        switchMap((googleUserInfo) => {
-          if (googleUserInfo) {
-            return this.authService.authenticateWithGoogle(googleUserInfo);
-          }
-          return of(null);
-        }),
-        tap((backendResponse) => {
-          if (backendResponse) {
-            console.log("🎉 User Authenticated and Stored:", backendResponse);
-          this.isLoadingGoogle = false;
+          }),
 
-            this.router.navigate(["/game"], { clearHistory: true });
-          }
-        }),
-        catchError((err) => {
-          this.isLoadingGoogle = false;
+          // 5️⃣ Handle successful backend response
+          tap((backendResponse) => {
+            if (backendResponse?.user) {
+              console.log("🎉 User Authenticated and Stored:", backendResponse.user);
+              // ✅ Save in ApplicationSettings for auto-login
+              ApplicationSettings.setString(
+                "user",
+                JSON.stringify(backendResponse.user)
+              );
 
-          console.error("❌ Error during Google Sign-Up:", err);
-          return of(null);
-        })
-      )
-      .subscribe();
+              // ✅ Also broadcast to BehaviorSubject
+              this.authService.persistUser(backendResponse.user);
+
+              // ✅ Navigate to game
+              this.router.navigate(["/game"], { clearHistory: true });
+            } else {
+              console.warn("⚠️ No user returned from backend.");
+            }
+          }),
+
+          catchError((err) => {
+            console.error("❌ Error during Google Sign-Up:", err);
+            return of(null);
+          }),
+
+          finalize(() => {
+            this.isLoadingGoogle = false; // ✅ stop loader no matter what
+          })
+        )
+        .subscribe();
+    } catch (err) {
+      console.error("❌ Error configuring Google Sign-In:", err);
+      this.isLoadingGoogle = false;
+    }
   }
-
-
-  ngOnInit(): void {}
 }
