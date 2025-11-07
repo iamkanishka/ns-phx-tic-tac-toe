@@ -25,6 +25,7 @@ import {
   GoogleUser,
 } from "../auth/service/auth/auth.service";
 import { ConfettiComponent } from "./confetti.component";
+import { GameHeaderComponent } from "./game-header.component";
 
 interface CellPosition {
   row: number;
@@ -48,11 +49,16 @@ interface WaitingGame {
   standalone: false,
   selector: "app-game",
   templateUrl: "./game.component.html",
-  styleUrls: ["./game.component.css"],
+ 
 })
 export class GameComponent implements OnInit, OnDestroy {
   @ViewChild("confetti", { static: false })
   confetti_Burst!: ConfettiComponent;
+
+    @ViewChild("gameheader", { static: false })
+  gameHeaderComp: GameHeaderComponent =
+    {} as GameHeaderComponent;
+
 
   private destroy$ = new Subject<void>();
 
@@ -482,6 +488,8 @@ export class GameComponent implements OnInit, OnDestroy {
       this.gameService.resetGame();
       this.isAnimating = false;
     }
+    this.gameHeaderComp.ngOnInit();
+
   }
 
   async resetScores(): Promise<void> {
@@ -516,6 +524,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.showLobby = false;
     this.gameSocketService.disconnect();
     this.gameService.resetGame();
+  this.gameHeaderComp.ngOnInit();
   }
 
   // ============================================
@@ -715,37 +724,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.gameService.updateSettings({ showHints: args.value });
   }
 
-  getCellClass(cell: string, index: number): string[] {
-    const classes = ["cell"];
-
-    if (cell) {
-      classes.push(`cell-${cell.toLowerCase()}`);
-    } else {
-      classes.push("cell-empty");
-    }
-
-    if (this.gameService.winningLine?.includes(index)) {
-      classes.push("winning-cell");
-    }
-
-    if (this.cellStates[index]) {
-      classes.push("cell-pop");
-    }
-
-    if (this.suggestedMove === index && this.showHint) {
-      classes.push("cell-hint");
-    }
-
-    // Disable cell if not player's turn in online mode
-    if (
-      this.currentMode === GameMode.Online &&
-      !this.gameSocketService.isMyTurn()
-    ) {
-      classes.push("cell-disabled");
-    }
-
-    return classes;
-  }
+  
 
   getStatusMessage(): string {
     if (this.currentMode === GameMode.Online) {
@@ -932,11 +911,26 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  logOut() {
-    console.log("Signing out");
-    GoogleSignin.signOut();
+  async logOut() {
+  try {
+    console.log("Signing out...");
+
+    // Sign out from Google session
+     await GoogleSignin.signOut();
+   // Optionally clear your own local app data/session
+    this.authService.clearLocalSession();
+
+    // Navigate to sign-in page
     this.router.navigate(["signin"]);
+
+    console.log("Successfully signed out and cleared persistent session");
+  } catch (error) {
+    console.error("Error during logout:", error);
   }
+}
+
+
+
 
   private loadGoogleUserInfo(): void {
     try {
