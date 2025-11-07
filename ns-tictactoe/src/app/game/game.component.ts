@@ -99,7 +99,7 @@ export class GameComponent implements OnInit, OnDestroy {
   public isLoadingGames = false;
 
   // user info
-  protected userInfo: AuthenticatedUserResponse | null = null;
+  protected userInfo: GoogleUser | null = null;
 
   // 🔹 Added: All cell element references
   //  @ViewChildren("cellRef", { read: ElementRef }) cellRefs!: QueryList<ElementRef>;
@@ -526,7 +526,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.isLoadingGames = true;
     try {
       this.waitingGames = await this.gameSocketService.getWaitingGames(
-        this.userInfo?.user.id
+        this.userInfo?.id
       );
     } catch (error: any) {
       this.showToast("Failed to load games", "error");
@@ -560,8 +560,8 @@ export class GameComponent implements OnInit, OnDestroy {
     this.createOnlineGameLoader = true;
     try {
       this.currentGameId = await this.gameSocketService.createGame(
-        this.userInfo.user.id,
-        this.userInfo.user.name
+        this.userInfo.id,
+        this.userInfo.name
       );
 
       console.log(this.currentGameId + "Game Created");
@@ -598,8 +598,8 @@ export class GameComponent implements OnInit, OnDestroy {
     try {
       await this.gameSocketService.joinGame(
         gameId,
-        this.userInfo.user.id,
-        this.userInfo.user.name
+        this.userInfo.id,
+        this.userInfo.name
       );
       this.currentGameId = gameId;
       this.showLobby = false;
@@ -941,7 +941,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private loadGoogleUserInfo(): void {
     try {
       this.authService.user$.subscribe({
-        next: (data: AuthenticatedUserResponse) => {
+        next: (data: GoogleUser) => {
           console.log("✅ Google user info:", data);
           this.userInfo = data;
         },
