@@ -6,223 +6,256 @@ import {
   OnChanges,
   SimpleChanges,
   OnInit,
+  Input,
 } from "@angular/core";
 import { GameService, GameState } from "./game.service";
 import { GameSocketService, ConnectionStatus } from "./game-socket.service";
+import { AnimationDefinition, Label } from "@nativescript/core";
+import { GameMode } from "./game.component";
+ 
+
 
 @Component({
   selector: "game-header",
   template: `
-    <StackLayout marginBottom="24" horizontalAlignment="center">
-      <Label
-        #statusLabel
-        [text]="getStatusMessage()"
-        class="status-message"
-        color="white"
-      ></Label>
-    </StackLayout>
+   <StackLayout 
+  marginBottom="14" 
+  horizontalAlignment="center" 
+  verticalAlignment="top">
+  
+  <Label 
+    #statusLabel
+    [text]="getStatusMessage()" 
+    [color]="statusColor"
+    [fontSize]="statusFontSize"
+    fontWeight="600"
+    textAlignment="center"
+  
+    minHeight="32"
+    [accessibilityLabel]="getStatusMessage()"
+    (loaded)="onStatusLabelLoaded($event)">
+  </Label>
+         
+ 
+</StackLayout>
   `,
 })
 export class GameHeaderComponent implements OnInit, OnDestroy, OnChanges {
-  @ViewChild("statusLabel", { static: true }) statusLabel!: ElementRef;
+  @Input() currentMode: GameMode = GameMode.Offline;
+  @Input() opponentConnected: boolean = false;
+  @Input() mySymbol: string = 'X';
 
-  private pulseRunning = false;
-  private isAnimating = false;
-  private connectionSub: any;
+  @ViewChild('statusLabel', { static: false }) statusLabel?: ElementRef<Label>;
+
+  GameState = GameState;
+  
+  // Dynamic styling properties
+  statusColor: string = '#FFFFFF';
+  statusFontSize: number = 20;
+  subtitleColor: string = 'rgba(255, 255, 255, 0.85)';
+  
+  private animationCancellers: Array<() => void> = [];
+  private isAnimating: boolean = false;
+
+ 
 
   constructor(
     public gameService: GameService,
-    private gameSocketService: GameSocketService
+    public gameSocketService: GameSocketService
   ) {}
 
-  // =========================
-  // 🌐 INIT
-  // =========================
-  ngOnInit() {
-    // Listen for online/offline or connection status changes
-    this.connectionSub = this.gameSocketService.connectionStatus$.subscribe(
-      (status) => {
-        if (status === ConnectionStatus.Connected) {
-          this.stopAllAnimations();
-          this.playStateAnimation();
-        } else {
-          this.stopAllAnimations(); // stop animations if disconnected
-        }
-      }
-    );
+  ngOnInit(): void {
+    this.updateStyling();
   }
 
-  ngAfterViewInit() {
-    this.playStateAnimation();
+  ngOnDestroy(): void {
+    this.cleanupAnimations();
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes["gameService"]) {
-      this.playStateAnimation();
-    }
+  ngOnChanges(): void {
+    this.updateStyling();
+    this.updateAnimations();
   }
 
-  ngOnDestroy() {
-    this.stopAllAnimations();
-    if (this.connectionSub) this.connectionSub.unsubscribe();
-  }
-
-  // =========================
-  // 🧩 MESSAGE
-  // =========================
   getStatusMessage(): string {
-    switch (this.gameService.gameState) {
+    if (this.currentMode === GameMode.Online) {
+      if (!this.opponentConnected) {
+        return "Waiting for opponent...";
+      }
+
+      if (this.gameService.gameState === GameState.Playing) {
+        return this.gameSocketService.isMyTurn()
+          ? `Your turn (${this.mySymbol})`
+          : `Opponent's turn`;
+      }
+    }
+
+    const state = this.gameService.gameState;
+    const currentPlayer = this.gameService.currentPlayer;
+
+    switch (state) {
       case GameState.Playing:
-        return this.isOnlineMode()
-          ? "Online Match in Progress"
-          : "Game in Progress";
+        return `Player ${currentPlayer}'s Turn`;
       case GameState.Won:
-        return "You Won!";
+        if (this.currentMode === GameMode.Online) {
+          return this.gameService.winner === this.mySymbol
+            ? "🎉 You Won! 🎉"
+            : "😢 You Lost";
+        }
+        return `🎉 Player ${this.gameService.winner} Wins! 🎉`;
       case GameState.Draw:
-        return "It's a Draw!";
+        return "🤝 It's a Draw!";
       default:
-        return "";
+        return "Game Over";
     }
   }
 
-  private isOnlineMode(): boolean {
-    return this.gameSocketService.isConnected();
+  getStatusSubtitle(): string {
+    // Add your subtitle logic here
+    return '';
   }
 
-  // =========================
-  // 🎬 MAIN ANIMATION CONTROLLER
-  // =========================
-  private playStateAnimation() {
-    const label = this.statusLabel?.nativeElement;
-    if (!label) return;
+  onStatusLabelLoaded(args: any): void {
+    const label = args.object as Label;
+    this.updateStyling();
+    this.startAnimation(label);
+  }
 
-    this.stopAllAnimations();
+  private updateStyling(): void {
+    const state = this.gameService.gameState;
 
-    switch (this.gameService.gameState) {
+    switch (state) {
+      case GameState.Playing:
+         this.statusFontSize = 20;
+        break;
+      case GameState.Won:
+         this.statusFontSize = 22;
+        break;
+      case GameState.Draw:
+         this.statusFontSize = 20;
+        break;
+      default:
+         this.statusFontSize = 20;
+    }
+  }
+
+  private updateAnimations(): void {
+    this.cleanupAnimations();
+  }
+
+  private startAnimation(label: Label): void {
+    const state = this.gameService.gameState;
+
+    switch (state) {
       case GameState.Playing:
         this.startPulseAnimation(label);
         break;
       case GameState.Won:
-        this.playCelebrateAnimation(label);
+        this.startCelebrateAnimation(label);
         break;
       case GameState.Draw:
-        this.playBounceAnimation(label);
+        this.startBounceAnimation(label);
         break;
     }
   }
 
-  // =========================
-  // 🧹 STOP & RESET
-  // =========================
-  private stopAllAnimations() {
-    this.pulseRunning = false;
-    this.isAnimating = false;
-    const label = this.statusLabel?.nativeElement;
-    if (label) {
-      label.cancelAllAnimation();
-      label.scaleX = 1;
-      label.scaleY = 1;
-      label.opacity = 1;
-      label.translateY = 0;
-      label.rotate = 0;
-    }
+  private startPulseAnimation(label: Label): void {
+    this.isAnimating = true;
+    
+    const pulse = () => {
+      if (!this.isAnimating || this.gameService.gameState !== GameState.Playing) {
+        return;
+      }
+
+      label.animate({
+        opacity: 0.7,
+        scale: { x: 0.98, y: 0.98 },
+        duration: 1000,
+        curve: 'easeInOut'
+      }).then(() => {
+        if (!this.isAnimating || this.gameService.gameState !== GameState.Playing) {
+          return;
+        }
+
+        label.animate({
+          opacity: 1,
+          scale: { x: 1, y: 1 },
+          duration: 1000,
+          curve: 'easeInOut'
+        }).then(() => {
+          pulse();
+        }).catch(() => {});
+      }).catch(() => {});
+    };
+
+    pulse();
   }
 
-  // =========================
-  // 🔵 PLAYING → Pulse Loop
-  // =========================
-  private startPulseAnimation(view) {
-    this.pulseRunning = true;
+  private startCelebrateAnimation(label: Label): void {
+    this.isAnimating = true;
 
-    const animatePulse = async () => {
-      if (!this.pulseRunning || this.gameService.gameState !== GameState.Playing)
+    const animations = [
+      { scale: { x: 1.2, y: 1.2 }, opacity: 1, duration: 200, curve: 'easeOut' },
+      { scale: { x: 0.9, y: 0.9 }, duration: 200, curve: 'easeIn' },
+      { scale: { x: 1.1, y: 1.1 }, duration: 200, curve: 'easeOut' },
+      { scale: { x: 1, y: 1 }, duration: 200, curve: 'easeInOut' }
+    ];
+
+    const playSequence = async (index: number) => {
+      if (!this.isAnimating || index >= animations.length) {
         return;
+      }
 
       try {
-        await view.animate({
-          scale: { x: 1.2, y: 1.2 },
-          opacity: 0.85,
-          duration: 700,
-          curve: "easeInOut",
-        });
-
-        await view.animate({
-          scale: { x: 1, y: 1 },
-          opacity: 1,
-          duration: 700,
-          curve: "easeInOut",
-        });
-
-        requestAnimationFrame(animatePulse);
-      } catch {
-        // Animation interrupted — safe to ignore
+        await label.animate(animations[index]);
+        await playSequence(index + 1);
+      } catch (error) {
+        // Animation cancelled
       }
     };
 
-    animatePulse();
+    playSequence(0);
   }
 
-  // =========================
-  // 🟢 WON → Celebrate
-  // =========================
-  private playCelebrateAnimation(view) {
+  private startBounceAnimation(label: Label): void {
     this.isAnimating = true;
-    view
-      .animate({
-        scale: { x: 1.4, y: 1.4 },
-        rotate: 15,
-        duration: 300,
-        curve: "easeInOut",
-      })
-      .then(() =>
-        view.animate({
-          scale: { x: 1, y: 1 },
-          rotate: -15,
-          duration: 300,
-          curve: "easeInOut",
-        })
-      )
-      .then(() =>
-        view.animate({
-          rotate: 0,
-          duration: 200,
-        })
-      )
-      .finally(() => (this.isAnimating = false));
+
+    const animations = [
+      { translate: { x: 0, y: -15 }, duration: 150, curve: 'easeOut' },
+      { translate: { x: 0, y: 0 }, duration: 150, curve: 'easeOut' },
+      { translate: { x: 0, y: -8 }, duration: 100, curve: 'easeOut' },
+      { translate: { x: 0, y: 0 }, duration: 100, curve: 'easeIn' }
+    ];
+
+    const playSequence = async (index: number) => {
+      if (!this.isAnimating || index >= animations.length) {
+        return;
+      }
+
+      try {
+        await label.animate(animations[index]);
+        await playSequence(index + 1);
+      } catch (error) {
+        // Animation cancelled
+      }
+    };
+
+    playSequence(0);
   }
 
-  // =========================
-  // 🟡 DRAW → Bounce
-  // =========================
-  private playBounceAnimation(view) {
-    this.isAnimating = true;
-    view
-      .animate({
-        translate: { x: 0, y: -15 },
-        duration: 200,
-        curve: "easeOut",
-      })
-      .then(() =>
-        view.animate({
-          translate: { x: 0, y: 0 },
-          duration: 200,
-          curve: "easeIn",
-        })
-      )
-      .then(() =>
-        view.animate({
-          translate: { x: 0, y: -8 },
-          duration: 150,
-          curve: "easeOut",
-        })
-      )
-      .then(() =>
-        view.animate({
-          translate: { x: 0, y: 0 },
-          duration: 150,
-          curve: "easeIn",
-        })
-      )
-      .finally(() => (this.isAnimating = false));
+  private cleanupAnimations(): void {
+    this.isAnimating = false;
+    
+    // Execute all cancellation functions
+    this.animationCancellers.forEach(cancel => {
+      try {
+        cancel();
+      } catch (error) {
+        // Ignore cancellation errors
+      }
+    });
+    
+    // Clear the cancellers array
+    this.animationCancellers = [];
   }
 }
