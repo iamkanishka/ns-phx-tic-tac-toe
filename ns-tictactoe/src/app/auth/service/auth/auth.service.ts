@@ -93,6 +93,10 @@ export class AuthService {
     }
   }
 
+  public clearLocalSession() {
+   ApplicationSettings.clear(); // clears all stored user data
+}
+
   private loadStoredUser(): GoogleUser | null {
     try {
       const stored = ApplicationSettings.getString("user");
