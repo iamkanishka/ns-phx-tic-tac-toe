@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core'
+import { RouterExtensions } from "@nativescript/angular";
+import { ApplicationSettings } from "@nativescript/core";
 
 @Component({
   standalone: false,
@@ -6,11 +8,14 @@ import { Component, OnInit } from '@angular/core'
   templateUrl: 'app.component.html',
 })
 export class AppComponent implements OnInit {
-  constructor() {
-    // Use the component constructor to inject providers.
-  }
+   constructor(private router: RouterExtensions) {}
 
   ngOnInit(): void {
-    // Init your component properties here.
+    const storedUser = ApplicationSettings.getString("user");
+    if (storedUser) {
+      this.router.navigate(["/game"], { clearHistory: true });
+    } else {
+      this.router.navigate(["/signin"], { clearHistory: true });
+    }
   }
 }
