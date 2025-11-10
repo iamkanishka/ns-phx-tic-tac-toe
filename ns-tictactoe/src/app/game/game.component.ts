@@ -118,9 +118,9 @@ export class GameComponent implements OnInit, OnDestroy {
   protected isJoinLoading: boolean = false;
 
   constructor(
-    public gameService: GameService,
-    public gameSocketService: GameSocketService,
-    public gameApiService: GameApiService,
+    private gameService: GameService,
+    private gameSocketService: GameSocketService,
+    private gameApiService: GameApiService,
     private animationService: AnimationService,
     private cdRef: ChangeDetectorRef,
     private clipboardService: ClipboardService,
@@ -916,7 +916,7 @@ export class GameComponent implements OnInit, OnDestroy {
     console.log("Signing out...");
 
     // Sign out from Google session
-     await GoogleSignin.signOut();
+     GoogleSignin.signOut();
    // Optionally clear your own local app data/session
     this.authService.clearLocalSession();
 
